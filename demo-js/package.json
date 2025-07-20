@@ -1,0 +1,18 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node agent.js",
+    "interactive": "node interactive-agent.js",
+    "dev": "NODE_ENV=development node interactive-agent.js"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.3.49",
+    "@langchain/core": "^0.3.64",
+    "@langchain/deepseek": "^0.1.0",
+    "@langchain/langgraph": "^0.3.9",
+    "@langchain/tavily": "^0.1.4",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5",
+    "langchain": "^0.3.30"
+  }
+}
