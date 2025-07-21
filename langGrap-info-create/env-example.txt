@@ -1,0 +1,9 @@
+# 将此文件重命名为 .env 并填入您的 API 密钥
+
+# Google AI Studio API 配置（必需）
+# 获取地址: https://aistudio.google.com/app/apikey
+GOOGLE_API_KEY=your_google_api_key_here
+
+# Tavily 搜索 API 配置（必需）
+# 获取地址: https://tavily.com/
+TAVILY_API_KEY=your_tavily_api_key_here 

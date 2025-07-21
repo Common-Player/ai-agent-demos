@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能助手 - LangGraph Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .preset-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .preset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .preset-btn:active {
+            transform: translateY(0);
+        }
+
+        .chat-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #4f46e5;
+            display: none;
+        }
+
+        .result-content {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border-left-color: #dc2626;
+        }
+
+        .success {
+            color: #059669;
+            background: #f0fdf4;
+            border-left-color: #059669;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .preset-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI 智能助手</h1>
+            <p>基于 LangGraph + Gemini 2.5 Pro + Tavily 的强大 AI Agent</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 预设功能按钮 -->
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="showPresetInput('weather', '天气查询')">
+                    🌤️ 天气查询
+                </button>
+                <button class="preset-btn" onclick="showPresetInput('news', '新闻搜索')">
+                    📰 新闻搜索
+                </button>
+                <button class="preset-btn" onclick="showPresetInput('extract', '内容提取')">
+                    📄 网页提取
+                </button>
+                <button class="preset-btn" onclick="showPresetInput('research', '综合研究')">
+                    🔬 综合研究
+                </button>
+                <button class="preset-btn" onclick="showPresetInput('calculate', '数学计算')">
+                    🧮 数学计算
+                </button>
+                <button class="preset-btn" onclick="showPresetInput('datetime', '时间查询')">
+                    ⏰ 时间查询
+                </button>
+                <button class="preset-btn" onclick="showPresetInput('file', '文件操作')">
+                    📁 文件操作
+                </button>
+                <button class="preset-btn" onclick="showPresetInput('system', '系统信息')">
+                    💻 系统信息
+                </button>
+            </div>
+
+            <!-- 自定义问题区域 -->
+            <div class="chat-section">
+                <div class="input-group">
+                    <label for="customQuestion">💬 自定义问题</label>
+                    <textarea id="customQuestion" placeholder="输入您想要询问的任何问题..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="submitCustomQuestion()">发送问题</button>
+            </div>
+
+            <!-- 结果显示区域 -->
+            <div class="result-section" id="resultSection">
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPresetType = null;
+        let currentInput = null;
+
+        function showPresetInput(presetType, title) {
+            currentPresetType = presetType;
+            
+            // 获取输入提示
+            const prompts = {
+                'weather': '请输入城市名称（如：北京、上海、纽约）',
+                'news': '请输入新闻主题（如：人工智能、比特币、科技新闻）',
+                'extract': '请输入网页URL（可用逗号分隔多个URL）',
+                'research': '请输入研究主题（如：区块链技术、量子计算）',
+                'calculate': '请输入数学表达式（如：2+3*4, sqrt(16), sin(pi/2)）',
+                'datetime': '请选择查询类型（current=当前时间, format=格式示例）',
+                'file': '请输入文件操作（read:文件路径, list:目录路径, write:文件路径:内容）',
+                'system': '请选择信息类型（all=全部, os=操作系统, memory=内存, cpu=CPU）'
+            };
+
+            const userInput = prompt(`${title}\n${prompts[presetType]}`);
+            
+            if (userInput && userInput.trim()) {
+                currentInput = userInput.trim();
+                submitPresetQuery();
+            }
+        }
+
+        async function submitPresetQuery() {
+            if (!currentPresetType || !currentInput) return;
+
+            showLoading();
+
+            try {
+                const response = await fetch(`/api/preset/${currentPresetType}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: currentInput,
+                        thread_id: 'web_session_' + Date.now()
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(data.response, 'success');
+                } else {
+                    showResult('错误: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showResult('网络错误: ' + error.message, 'error');
+            }
+
+            // 重置状态
+            currentPresetType = null;
+            currentInput = null;
+        }
+
+        async function submitCustomQuestion() {
+            const question = document.getElementById('customQuestion').value.trim();
+            
+            if (!question) {
+                alert('请输入问题');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: question,
+                        thread_id: 'web_session_' + Date.now()
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(data.response, 'success');
+                } else {
+                    showResult('错误: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showResult('网络错误: ' + error.message, 'error');
+            }
+        }
+
+        function showLoading() {
+            const resultSection = document.getElementById('resultSection');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            resultSection.style.display = 'block';
+            resultSection.className = 'result-section';
+            
+            // 滚动到结果区域
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showResult(content, type) {
+            const resultSection = document.getElementById('resultSection');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.textContent = content;
+            resultSection.style.display = 'block';
+            resultSection.className = `result-section ${type}`;
+            
+            // 滚动到结果区域
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 支持 Enter 键提交
+        document.getElementById('customQuestion').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                submitCustomQuestion();
+            }
+        });
+    </script>
+</body>
+</html> 
