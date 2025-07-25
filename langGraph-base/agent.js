@@ -10,12 +10,12 @@ const agentTools = [
 import { ChatDeepSeek } from '@langchain/deepseek';
 import { ChatAnthropic } from '@langchain/anthropic';
 // 定义 llm
-// const agentModel = new ChatDeepSeek({ model: 'deepseek-chat', temperature: 0 })
-const agentModel = new ChatAnthropic({
-    model: 'claude-sonnet-4-20250514',
-    temperature: 0.1,
-    maxTokens: 2000
-});
+const agentModel = new ChatDeepSeek({ model: 'deepseek-reasoner', temperature: 0 })
+// const agentModel = new ChatAnthropic({
+//     model: 'claude-sonnet-4-20250514',
+//     temperature: 0.1,
+//     maxTokens: 2000
+// });
 import { MemorySaver } from '@langchain/langgraph';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 
