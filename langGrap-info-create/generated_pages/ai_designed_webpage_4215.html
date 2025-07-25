@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>动物世界探索中心</title>
+    <!-- 引入Google Fonts，为页面带来更生动活泼的字体风格 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        /* 全局重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* CSS 变量定义，方便主题颜色管理 */
+        :root {
+            --color-primary: #4CAF50; /* 森林绿 */
+            --color-secondary: #8BC34A; /* 浅草绿 */
+            --color-accent: #FFC107; /* 琥珀黄，用于强调 */
+            --color-background: #E8F5E9; /* 极浅绿，作为背景基色 */
+            --color-card-bg: #FFFFFF; /* 卡片背景色 */
+            --color-text-dark: #212121; /* 深色文本 */
+            --color-text-light: #424242; /* 浅色文本 */
+            --color-border: #E0E0E0; /* 边框颜色 */
+            --color-button-hover: #388E3C; /* 按钮悬停色 */
+            --color-button-auto: #1976D2; /* 自动按钮的蓝色 */
+            --color-button-auto-hover: #1565C0; /* 自动按钮悬停色 */
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08); /* 轻微阴影 */
+            --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15); /* 悬停阴影 */
+            --border-radius-card: 16px; /* 卡片圆角 */
+            --border-radius-input: 8px; /* 输入框圆角 */
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif; /* 中文字体优先 */
+            background: var(--color-background) url('https://source.unsplash.com/random/1920x1080/?forest,jungle,animals') no-repeat center center fixed; /* 随机森林/动物背景图 */
+            background-size: cover;
+            color: var(--color-text-dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden; /* 防止水平滚动 */
+        }
+
+        /* 背景叠加层，使内容更易读 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(240, 255, 240, 0.7); /* 半透明浅绿叠加 */
+            backdrop-filter: blur(3px); /* 背景模糊效果 */
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95); /* 略带透明的白色容器 */
+            border-radius: var(--border-radius-card);
+            box-shadow: var(--shadow-light);
+            z-index: 1; /* 确保在背景之上 */
+        }
+
+        /* 头部区域 */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); /* 渐变背景 */
+            color: white;
+            border-radius: var(--border-radius-card);
+            box-shadow: var(--shadow-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 头部装饰性元素 */
+        .header::before {
+            content: '🌿🐾🌍'; /* 动物/自然主题表情符号 */
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 3rem;
+            opacity: 0.2;
+            transform: rotate(-15deg);
+        }
+        .header::after {
+            content: '🌳🦋🦁';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 3rem;
+            opacity: 0.2;
+            transform: rotate(15deg);
+        }
+
+        .header h1 {
+            font-family: 'Pacifico', cursive; /* 标题使用更具趣味性的字体 */
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* 文本阴影 */
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* 网格布局 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* 响应式网格 */
+            gap: 30px; /* 网格间距 */
+            padding: 10px;
+        }
+
+        /* 卡片样式 (更名为 habitat-card 以符合主题) */
+        .habitat-card {
+            background: var(--color-card-bg);
+            border-radius: var(--border-radius-card);
+            padding: 25px;
+            box-shadow: var(--shadow-light);
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* 平滑过渡效果 */
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+
+        .habitat-card:hover {
+            transform: translateY(-8px) scale(1.01); /* 悬停上浮效果 */
+            box-shadow: var(--shadow-hover); /* 悬停阴影加深 */
+        }
+
+        /* 卡片内部装饰性元素 */
+        .habitat-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--color-secondary) 0%, transparent 70%); /* 径向渐变圆 */
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--color-primary); /* 底部边框 */
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-icon {
+            font-size: 2.5rem; /* 增大图标尺寸 */
+            margin-right: 15px;
+            line-height: 1;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2)); /* 图标阴影 */
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .card-content {
+            min-height: 180px; /* 增加卡片内容区域最小高度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 表单元素 */
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* 小屏幕下允许换行 */
+        }
+
+        .input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-input);
+            font-size: 1rem;
+            color: var(--color-text-dark);
+            background-color: #F8F8F8;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); /* 聚焦时的光晕效果 */
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-input);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease; /* 按钮动画 */
+            flex-shrink: 0; /* 防止按钮缩小 */
+        }
+
+        .btn:hover {
+            background: var(--color-button-hover);
+            transform: translateY(-2px); /* 悬停上浮 */
+        }
+        .btn:active {
+            transform: translateY(0); /* 点击下沉 */
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #BDBDBD;
+        }
+
+        .btn-auto {
+            width: 100%;
+            background: var(--color-button-auto);
+        }
+
+        .btn-auto:hover {
+            background: var(--color-button-auto-hover);
+        }
+
+        /* 结果显示区域 */
+        .result {
+            background: #F9FBE7; /* 浅黄绿色背景，突出结果 */
+            border: 1px solid #DCE775;
+            border-radius: var(--border-radius-input);
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 280px; /* 增加最大高度 */
+            overflow-y: auto;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--color-text-light);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); /* 内阴影 */
+        }
+
+        .default-text {
+            color: #9E9E9E;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--color-primary);
+            font-weight: 600;
+            padding: 20px;
+        }
+
+        /* 自定义动物爪印加载动画 */
+        .loading::before {
+            content: '🐾'; /* 爪印表情符号 */
+            font-size: 1.8rem;
+            animation: paw-spin 1.5s ease-in-out infinite; /* 爪印旋转动画 */
+            display: inline-block;
+        }
+
+        @keyframes paw-spin {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            25% { transform: rotate(30deg) scale(1.1); opacity: 0.8; }
+            50% { transform: rotate(0deg) scale(1); opacity: 1; }
+            75% { transform: rotate(-30deg) scale(1.1); opacity: 0.8; }
+            100% { transform: rotate(0deg) scale(1); opacity: 1; }
+        }
+
+        /* 数据显示格式化 */
+        .data-display h4 {
+            margin: 15px 0 10px 0;
+            color: var(--color-primary);
+            font-size: 1.2rem;
+            border-bottom: 1px dashed var(--color-secondary); /* 虚线分隔 */
+            padding-bottom: 5px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 6px 0;
+            border-bottom: 1px dotted #E0E0E0;
+            font-size: 0.95rem;
+        }
+
+        .data-label {
+            font-weight: 600;
+            color: var(--color-text-light);
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+
+        .data-value {
+            color: var(--color-text-dark);
+            text-align: right;
+            flex-grow: 1;
+        }
+
+        .data-list {
+            margin: 10px 0;
+            padding-left: 25px;
+            list-style-type: '🌿 '; /* 自定义列表项目符号 */
+        }
+
+        .data-list li {
+            margin: 6px 0;
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+        }
+
+        .result-text {
+            white-space: pre-wrap; /* 保留空白并自动换行 */
+            word-wrap: break-word;
+        }
+
+        pre {
+            background: #F0F4C3; /* 代码块背景色 */
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            border: 1px solid #C5E1A5;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 25px;
+            }
+            .header h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .grid {
+                grid-template-columns: 1fr; /* 单列布局 */
+                gap: 20px;
+            }
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            .header p {
+                font-size: 1rem;
+            }
+            .card-icon {
+                font-size: 2rem;
+            }
+            .card-title {
+                font-size: 1.4rem;
+            }
+            .input-group {
+                flex-direction: column; /* 输入组垂直堆叠 */
+                gap: 10px;
+            }
+            .btn {
+                width: 100%; /* 按钮全宽 */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .header p {
+                font-size: 0.9rem;
+            }
+            .card-title {
+                font-size: 1.2rem;
+            }
+            .input, .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            .result {
+                font-size: 0.85rem;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 动物世界探索中心 🌍</h1>
+            <p>发现地球上最奇妙的生物与自然现象</p>
+        </div>
+
+        <div class="grid">
+            <!-- 天气观测站 -->
+            <div class="habitat-card">
+                <div class="card-header">
+                    <div class="card-icon">☀️</div>
+                    <h3 class="card-title">天气观测站</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="getWeatherInfo()">获取栖息地天气</button>
+                    <div id="weather-result" class="default-text result">点击按钮获取当前栖息地的天气信息</div>
+                </div>
+            </div>
+
+            <!-- 丛林快讯 -->
+            <div class="habitat-card">
+                <div class="card-header">
+                    <div class="card-icon">📰</div>
+                    <h3 class="card-title">丛林快讯</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="getNewsInfo()">获取今日生态新闻</button>
+                    <div id="news-result" class="default-text result">点击按钮获取最新的动物世界动态</div>
+                </div>
+            </div>
+
+            <!-- 生态百科 -->
+            <div class="habitat-card">
+                <div class="card-header">
+                    <div class="card-icon">🌐</div>
+                    <h3 class="card-title">生态百科</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="url" id="url-input" class="input" placeholder="输入生态网站网址" onkeypress="handleKeyPress(event, extractContent)" />
+                        <button class="btn" onclick="extractContent()">探索</button>
+                    </div>
+                    <div id="browser-result" class="default-text result">输入网址并点击探索按钮，获取生态信息</div>
+                </div>
+            </div>
+
+            <!-- 物种探秘 -->
+            <div class="habitat-card">
+                <div class="card-header">
+                    <div class="card-icon">🔬</div>
+                    <h3 class="card-title">物种探秘</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="text" id="research-input" class="input" placeholder="请输入物种或自然现象" onkeypress="handleKeyPress(event, doResearch)" />
+                        <button class="btn" onclick="doResearch()">研究</button>
+                    </div>
+                    <div id="research-result" class="default-text result">输入物种名称或自然现象，点击研究按钮</div>
+                </div>
+            </div>
+
+            <!-- 自然法则计算 -->
+            <div class="habitat-card">
+                <div class="card-header">
+                    <div class="card-icon">🧮</div>
+                    <h3 class="card-title">自然法则计算</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="text" id="calc-input" class="input" placeholder="请输入自然界数学表达式" onkeypress="handleKeyPress(event, doCalculate)" />
+                        <button class="btn" onclick="doCalculate()">计算</button>
+                    </div>
+                    <div id="calc-result" class="default-text result">输入数学表达式并点击计算按钮，探索自然规律</div>
+                </div>
+            </div>
+
+            <!-- 日夜节律 -->
+            <div class="habitat-card">
+                <div class="card-header">
+                    <div class="card-icon">⏰</div>
+                    <h3 class="card-title">日夜节律</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="getCurrentTime()">获取当前时间</button>
+                    <div id="time-result" class="default-text result">点击按钮获取当前时间信息，感受日夜更替</div>
+                </div>
+            </div>
+
+            <!-- 探险日志 -->
+            <div class="habitat-card">
+                <div class="card-header">
+                    <div class="card-icon">📁</div>
+                    <h3 class="card-title">探险日志</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="showFileContent()">查看探险记录</button>
+                    <div id="file-result" class="default-text result">点击按钮查看探险日志文件内容</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API = {
+            baseURL: 'http://localhost:8080', // 请确保后端服务运行在此地址
+            
+            async call(endpoint, input) {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            input: input, 
+                            thread_id: 'animal_world_' + Date.now() // 更改线程ID前缀以符合主题
+                        })
+                    });
+                    const data = await response.json();
+                    return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+                } catch (error) {
+                    return '网络错误: ' + error.message;
+                }
+            }
+        };
+
+        // 显示加载状态
+        function showLoading(elementId) {
+            document.getElementById(elementId).innerHTML = '<div class="loading">🐾 正在探索中...</div>'; // 更新加载文本
+        }
+
+        // 显示结果
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            
+            try {
+                // 尝试解析JSON
+                const jsonMatch = result.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const data = JSON.parse(jsonMatch[0]);
+                    element.innerHTML = formatData(data);
+                    return;
+                }
+            } catch (e) {
+                // 解析失败，显示原始文本
+            }
+            
+            element.innerHTML = `<div class="result-text">${result}</div>`;
+        }
+
+        // 统一的数据格式化
+        function formatData(data) {
+            if (!data || !data.type) {
+                return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+
+            let html = `<div class="data-display">`;
+            
+            // 标题部分
+            if (data.title || data.topic || data.city) {
+                html += `<h4>${data.title || data.topic || data.city || '探索结果'}</h4>`; // 更新标题
+            }
+            
+            // 主要信息
+            const mainFields = ['temperature', 'currentTime', 'result', 'summary', 'mainContent'];
+            for (const field of mainFields) {
+                if (data[field]) {
+                    const value = typeof data[field] === 'object' ? 
+                        (data[field].current || JSON.stringify(data[field])) : data[field];
+                    html += `<div style="font-size: 1.3rem; font-weight: bold; margin: 10px 0; color: var(--color-primary);">${value}</div>`; // 更新样式
+                    break;
+                }
+            }
+            
+            // 详细信息
+            const detailFields = {
+                condition: '天气状况', humidity: '湿度', wind: '风力', airQuality: '空气质量', // 更新标签
+                date: '日期', weekday: '星期', timezone: '时区',
+                expression: '表达式', explanation: '说明',
+                url: '网址', description: '描述'
+            };
+            
+            for (const [key, label] of Object.entries(detailFields)) {
+                if (data[key]) {
+                    html += `<div class="data-row">
+                        <span class="data-label">${label}:</span>
+                        <span class="data-value">${data[key]}</span>
+                    </div>`;
+                }
+            }
+            
+            // 列表信息
+            const listFields = ['suggestions', 'keyPoints', 'keyFeatures', 'technologies', 
+                              'keyFindings', 'trends', 'challenges', 'opportunities', 'steps', 'articles'];
+            
+            for (const field of listFields) {
+                if (data[field] && Array.isArray(data[field]) && data[field].length > 0) {
+                    html += `<h4>${getListTitle(field)}</h4><ul class="data-list">`;
+                    for (const item of data[field]) {
+                        const text = typeof item === 'object' ? 
+                            (item.title || item.summary || JSON.stringify(item)) : item;
+                        html += `<li>${text}</li>`;
+                    }
+                    html += '</ul>';
+                }
+            }
+            
+            // 内容字段
+            if (data.content) {
+                html += `<h4>内容</h4><pre>${data.content}</pre>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function getListTitle(field) {
+            const titles = {
+                suggestions: '探索建议', keyPoints: '核心要点', keyFeatures: '主要特征', // 更新标签
+                technologies: '生态技术', keyFindings: '重要发现', trends: '生态趋势',
+                challenges: '面临挑战', opportunities: '发展机遇', steps: '探险步骤', articles: '相关文献'
+            };
+            return titles[field] || field;
+        }
+
+        // 通用按钮处理
+        async function handleRequest(endpoint, input, resultId, buttonText) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '探索中...'; // 更新按钮文本
+            
+            showLoading(resultId);
+            
+            try {
+                const result = await API.call(endpoint, input);
+                showResult(resultId, result);
+            } catch (error) {
+                showResult(resultId, '探索失败: ' + error.message); // 更新错误信息
+            }
+            
+            btn.disabled = false;
+            btn.textContent = buttonText;
+        }
+
+        // 各功能函数
+        async function getWeatherInfo() {
+            await handleRequest('weather', '亚马逊雨林', 'weather-result', '获取栖息地天气'); // 更改默认地点
+        }
+
+        async function getNewsInfo() {
+            await handleRequest('news', '全球生态新闻', 'news-result', '获取今日生态新闻'); // 更改默认新闻主题
+        }
+
+        async function extractContent() {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) {
+                showResult('browser-result', '请输入有效的生态网站网址'); // 更新提示信息
+                return;
+            }
+            await handleRequest('extract', url, 'browser-result', '探索');
+        }
+
+        async function doResearch() {
+            const topic = document.getElementById('research-input').value.trim();
+            if (!topic) {
+                showResult('research-result', '请输入物种或自然现象'); // 更新提示信息
+                return;
+            }
+            await handleRequest('research', topic, 'research-result', '研究');
+        }
+
+        async function doCalculate() {
+            const expression = document.getElementById('calc-input').value.trim();
+            if (!expression) {
+                showResult('calc-result', '请输入自然界数学表达式'); // 更新提示信息
+                return;
+            }
+            await handleRequest('calculate', expression, 'calc-result', '计算');
+        }
+
+        async function getCurrentTime() {
+            await handleRequest('datetime', 'current', 'time-result', '获取当前时间');
+        }
+
+        async function showFileContent() {
+            // 注意：此路径是用户本地机器的特定路径。
+            // 对于公共演示，这需要是一个返回通用内容的服务器端点。
+            const targetPath = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md'; 
+            await handleRequest('file', `read:${targetPath}`, 'file-result', '查看探险记录'); // 更新按钮文本
+        }
+
+        // 回车键处理
+        function handleKeyPress(event, callback) {
+            if (event.key === 'Enter') {
+                callback();
+            }
+        }
+
+        // 页面加载完成后自动请求所有功能
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(autoLoadAll, 1000);
+        });
+
+        async function autoLoadAll() {
+            // 设置默认值
+            document.getElementById('url-input').value = 'https://www.nationalgeographic.com/'; // 更改默认URL
+            document.getElementById('research-input').value = '大熊猫习性'; // 更改默认研究主题
+            document.getElementById('calc-input').value = '100 / 5 + 2 * 3'; // 更改默认计算表达式
+            
+            // 显示加载状态
+            ['weather-result', 'news-result', 'browser-result', 'research-result', 
+             'calc-result', 'time-result', 'file-result'].forEach(showLoading);
+            
+            // 并行请求所有功能
+            const tasks = [
+                API.call('weather', '亚马逊雨林').then(r => showResult('weather-result', r)),
+                API.call('news', '全球生态新闻').then(r => showResult('news-result', r)),
+                API.call('extract', 'https://www.nationalgeographic.com/').then(r => showResult('browser-result', r)),
+                API.call('research', '大熊猫习性').then(r => showResult('research-result', r)),
+                API.call('calculate', '100 / 5 + 2 * 3').then(r => showResult('calc-result', r)),
+                API.call('datetime', 'current').then(r => showResult('time-result', r)),
+                API.call('file', 'read:/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md').then(r => showResult('file-result', r))
+            ];
+            
+            try {
+                await Promise.all(tasks);
+                console.log('✅ 所有动物世界探索功能加载完成'); // 更新控制台消息
+            } catch (error) {
+                console.error('❌ 探索过程中出现错误:', error); // 更新控制台消息
+            }
+        }
+    </script>
+
+<script>
+// AI网页设计师 - 高级功能集成
+window.aiAgentAPI = {
+    baseURL: 'http://localhost:8080',
+    
+    // 通用API调用函数
+    async callAPI(endpoint, input) {
+        try {
+            const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    input: input, 
+                    thread_id: 'ai_webpage_' + Date.now() 
+                })
+            });
+            const data = await response.json();
+            return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+        } catch (error) {
+            return '网络错误: ' + error.message;
+        }
+    },
+    
+    // 各种功能的便捷方法
+    weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+    news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+    extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+    research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+    calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+    datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+    file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+    system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+};
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🤖 AI正在处理...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    result = await window.aiAgentAPI.weather('北京');
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    result = await window.aiAgentAPI.news('科技新闻');
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    result = '请提供URL进行内容提取\n示例: https://www.example.com';
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    result = await window.aiAgentAPI.research('人工智能发展趋势');
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    result = await window.aiAgentAPI.calculate('sqrt(16) + log(10)');
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    result = await window.aiAgentAPI.file('list:.');
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n点击后会调用相应的AI功能\n这是一个智能识别的演示';
+                }
+                
+                // 显示结果
+                loadingElement.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+});
+</script>
+</body>
+</html>

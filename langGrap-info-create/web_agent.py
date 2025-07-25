@@ -14,6 +14,8 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from extended_tools import get_extended_tools
+# 删除未使用的 webpage_generator 导入
+from ai_webpage_designer import get_ai_webpage_designer_tool
 
 try:
     from langchain_google_genai import ChatGoogleGenerativeAI
@@ -22,6 +24,21 @@ except ImportError:
     GEMINI_AVAILABLE = False
     print("❌ 错误: langchain-google-genai 未安装，请先安装此依赖包")
     exit(1)
+
+try:
+    from langchain_openai import ChatOpenAI
+    from pydantic import SecretStr
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    print("⚠️  警告: langchain-openai 未安装，deepseek模型将不可用")
+
+try:
+    from langchain_anthropic import ChatAnthropic
+    CLAUDE_AVAILABLE = True
+except ImportError:
+    CLAUDE_AVAILABLE = False
+    print("⚠️  警告: langchain-anthropic 未安装，Claude模型将不可用")
 
 # 加载环境变量
 load_dotenv()
@@ -65,7 +82,7 @@ def run_async_in_loop(coro):
         if loop is None:
             raise RuntimeError("无法获取事件循环")
         future = asyncio.run_coroutine_threadsafe(coro, loop)
-        return future.result(timeout=300)  # 5分钟超时
+        return future.result(timeout=3000)  # 5分钟超时
     except Exception as e:
         print(f"❌ 异步操作执行失败: {str(e)}")
         return {"success": False, "error": f"操作失败: {str(e)}"}
@@ -158,66 +175,187 @@ tavily_tools = [
 ]
 
 # 合并所有工具
-agent_tools = tavily_tools + get_extended_tools()
+extended_tools = get_extended_tools()
+ai_designer_tool = get_ai_webpage_designer_tool()
+agent_tools = tavily_tools + extended_tools + [ai_designer_tool]
 
-def create_gemini_model():
+def create_deepseek_model():
+    """创建 DeepSeek 模型实例"""
+    if not OPENAI_AVAILABLE:
+        raise ValueError("DeepSeek 模型不可用，请先安装 langchain-openai")
+    
+    api_key = os.getenv("DEEPSEEK_API_KEY")
+    if not api_key:
+        raise ValueError("❌ 未找到 DEEPSEEK_API_KEY 环境变量，请在 .env 文件中配置")
+        
+    return ChatOpenAI(
+        model="deepseek-chat",
+        temperature=0.1,
+        api_key=SecretStr(api_key) if api_key else None,
+        base_url="https://api.deepseek.com"
+    )
+
+def create_gemini_model(model_name="gemini-2.5-flash"):
     """创建 Gemini 模型实例"""
     if not GEMINI_AVAILABLE:
         raise ValueError("Gemini 模型不可用，请先安装 langchain-google-genai")
-    
+    print("🔄 创建 Gemini 模型实例")
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("❌ 未找到 GOOGLE_API_KEY 环境变量，请在 .env 文件中配置")
-        
+    print("🔄 创建 Gemini 模型实例2")
     return ChatGoogleGenerativeAI(
-        model="gemini-2.5-pro",
+        model=model_name,
         temperature=0.1,
         max_tokens=20000,
         google_api_key=api_key
     )
 
-# 创建 Gemini 模型和 Agent
-print("🚀 初始化 Gemini 2.5 Pro 模型...")
-try:
-    agent_model = create_gemini_model()
-    print("✅ Gemini 2.5 Pro 模型初始化成功")
-    
-    agent_checkpoint = MemorySaver()
-    agent = create_react_agent(
-        model=agent_model,
-        tools=agent_tools,
-        checkpointer=agent_checkpoint
-    )
-    print("✅ Agent 初始化成功")
-    
-except Exception as e:
-    print(f"❌ 模型或 Agent 初始化失败: {str(e)}")
-    exit(1)
 
-async def run_agent_query(prompt: str, thread_id: str = "web_session"):
-    """运行 Agent 查询并返回结果"""
-    if 'agent' not in globals():
-        return {"success": False, "error": "Agent 未初始化"}
+
+# 模型配置映射
+MODEL_CONFIG = {
+    # 简单任务使用 DeepSeek
+    'simple': {
+        'name': 'DeepSeek Chat',
+        'types': ['weather', 'extract', 'calculate', 'datetime', 'file'],
+        'create_func': create_deepseek_model
+    },
+    # 复杂研究任务使用 Gemini Flash
+    'research': {
+        'name': 'Gemini 2.5 Flash',
+        'types': ['research', 'news'],
+        'create_func': lambda: create_gemini_model("gemini-2.5-flash")
+    },
+    # AI设计师任务使用 Gemini Pro
+    'ai_design': {
+        'name': 'Gemini 2.5 Pro',
+        'types': ['ai_design'],
+        'create_func': lambda: create_gemini_model("gemini-2.5-flash")
+    }
+}
+
+# 创建所有模型和对应的 Agent
+print("🚀 初始化多模型系统...")
+models = {}
+agents = {}
+
+for model_type, config in MODEL_CONFIG.items():
+    try:
+        print(f"📦 正在初始化 {config['name']}...")
+        model = config['create_func']()
+        models[model_type] = model
         
-    config = RunnableConfig(configurable={"thread_id": thread_id})
+        # 为每个模型创建对应的 Agent
+        # 简单任务不使用checkpoint，避免上下文积累导致token超限
+        if model_type == 'simple':
+            # DeepSeek模型token限制较小，不使用历史记忆
+            agent = create_react_agent(
+                model=model,
+                tools=agent_tools,
+                checkpointer=None
+            )
+            print(f"  📝 {config['name']} 配置为无记忆模式（避免token超限）")
+        else:
+            # 复杂任务使用checkpoint，保持对话连贯性
+            checkpoint = MemorySaver()
+            agent = create_react_agent(
+                model=model,
+                tools=agent_tools,
+                checkpointer=checkpoint
+            )
+            print(f"  📝 {config['name']} 配置为记忆模式")
+        agents[model_type] = agent
+        print(f"✅ {config['name']} 初始化成功")
+        
+    except Exception as e:
+        print(f"❌ {config['name']} 初始化失败: {str(e)}")
+        # 如果简单任务模型失败，尝试使用Gemini Flash作为备选
+        if model_type == 'simple':
+            try:
+                print("🔄 尝试使用 Gemini Flash 作为简单任务的备选模型...")
+                fallback_model = create_gemini_model("gemini-2.5-flash")
+                models[model_type] = fallback_model
+                # 备选模型也使用无记忆模式，保持与原配置一致
+                agent = create_react_agent(
+                    model=fallback_model,
+                    tools=agent_tools,
+                    checkpointer=None
+                )
+                agents[model_type] = agent
+                print("✅ 备选模型初始化成功（无记忆模式）")
+            except Exception as fallback_error:
+                print(f"❌ 备选模型也初始化失败: {str(fallback_error)}")
+                exit(1)
+        # 如果AI设计师模型失败，使用相同的备选逻辑
+        elif model_type == 'ai_design':
+            try:
+                print("🔄 AI设计师模型初始化失败，尝试使用备选模型...")
+                fallback_model = create_gemini_model("gemini-2.5-flash")
+                models[model_type] = fallback_model
+                # AI设计师任务使用记忆模式
+                checkpoint = MemorySaver()
+                agent = create_react_agent(
+                    model=fallback_model,
+                    tools=agent_tools,
+                    checkpointer=checkpoint
+                )
+                agents[model_type] = agent
+                print("✅ AI设计师备选模型初始化成功（记忆模式）")
+            except Exception as fallback_error:
+                print(f"❌ AI设计师备选模型也初始化失败: {str(fallback_error)}")
+                print(f"⚠️  AI设计师功能将不可用")
+        else:
+            print(f"⚠️  {config['name']} 不可用，相关功能可能受影响")
+
+def get_model_type_for_preset(preset_type):
+    """根据预设类型获取对应的模型类型"""
+    for model_type, config in MODEL_CONFIG.items():
+        if preset_type in config['types']:
+            return model_type
+    return 'simple'  # 默认使用简单任务模型
+
+print("✅ 多模型系统初始化完成")
+
+async def run_agent_query(prompt: str, thread_id: str = "web_session", model_type: str = "simple"):
+    """运行 Agent 查询并返回结果"""
+    if model_type not in agents:
+        return {"success": False, "error": f"模型类型 {model_type} 未初始化"}
+        
+    agent = agents[model_type]
+    model_name = MODEL_CONFIG[model_type]['name']
+    
+    # 根据模型类型决定是否使用thread_id配置
+    if model_type == 'simple':
+        # 简单任务不使用记忆，不需要thread_id配置
+        config = None
+        print(f"🤖 使用 {model_name} (无记忆模式) 处理查询: {prompt[:50]}...")
+    else:
+        # 复杂任务使用记忆功能
+        config = RunnableConfig(configurable={"thread_id": thread_id})
+        print(f"🤖 使用 {model_name} (记忆模式) 处理查询: {prompt[:50]}...")
     
     try:
-        print(f"🤖 开始处理查询: {prompt[:50]}...")
-        result = await agent.ainvoke(
-            {"messages": [HumanMessage(content=prompt)]},
-            config=config
-        )
+        if config:
+            result = await agent.ainvoke(
+                {"messages": [HumanMessage(content=prompt)]},
+                config=config
+            )
+        else:
+            result = await agent.ainvoke(
+                {"messages": [HumanMessage(content=prompt)]}
+            )
         
         if result["messages"]:
             last_message = result["messages"][-1]
-            print(f"✅ 查询处理完成")
+            print(f"✅ {model_name} 查询处理完成")
             return {"success": True, "response": last_message.content}
         else:
-            print(f"❌ 未收到回复")
+            print(f"❌ {model_name} 未收到回复")
             return {"success": False, "error": "未收到回复"}
             
     except Exception as e:
-        print(f"❌ 查询处理失败: {str(e)}")
+        print(f"❌ {model_name} 查询处理失败: {str(e)}")
         return {"success": False, "error": str(e)}
 
 @app.route('/')
@@ -225,24 +363,33 @@ def index():
     """主页面"""
     return render_template('index.html')
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    """处理聊天请求"""
+@app.route('/generated/<filename>')
+def serve_generated_page(filename):
+    """提供生成的网页文件"""
     try:
-        data = request.get_json()
-        prompt = data.get('prompt', '')
-        thread_id = data.get('thread_id', 'web_session')
-        
-        if not prompt:
-            return jsonify({"success": False, "error": "请输入问题"})
-        
-        # 使用全局事件循环运行异步函数
-        result = run_async_in_loop(run_agent_query(prompt, thread_id))
-        
-        return jsonify(result)
-        
+        generated_path = os.path.join(os.path.dirname(__file__), 'generated_pages', filename)
+        if os.path.exists(generated_path):
+            with open(generated_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        else:
+            return "网页文件不存在", 404
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        return f"访问错误: {str(e)}", 500
+
+@app.route('/demo.html')
+def serve_demo():
+    """提供demo.html文件"""
+    try:
+        demo_path = os.path.join(os.path.dirname(__file__), 'demo.html')
+        if os.path.exists(demo_path):
+            with open(demo_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        else:
+            return "demo.html文件不存在", 404
+    except Exception as e:
+        return f"访问demo.html错误: {str(e)}", 500
+
+# 删除未使用的 /api/chat 路由
 
 @app.route('/api/preset/<preset_type>', methods=['POST'])
 def preset_query(preset_type):
@@ -253,29 +400,131 @@ def preset_query(preset_type):
         thread_id = data.get('thread_id', 'web_session')
         
         prompts = {
-            'weather': f"请搜索 {user_input} 今天的天气情况，并提供详细的天气信息",
-            'news': f"请搜索关于 '{user_input}' 的最新新闻，提供详细的新闻摘要和相关信息",
-            'extract': f"请使用内容提取工具从以下URL提取内容并进行分析: {user_input}",
-            'research': f"""请对以下主题进行综合研究: {user_input}
-            
-请按照以下步骤进行:
-1. 首先使用搜索工具获取相关的最新信息和资料
-2. 如果找到重要的网页链接，使用内容提取工具获取详细内容
-3. 综合所有信息，提供详细的研究报告
+            'weather': f"""请搜索 {user_input} 今天的天气情况，获取详细信息后，严格按照以下JSON格式返回，不要包含任何其他文字说明：
 
-主题: {user_input}""",
-            'calculate': f"请使用计算工具计算以下表达式: {user_input}",
-            'datetime': f"请使用时间工具查询: {user_input}",
-            'file': f"请使用文件操作工具执行: {user_input}",
-            'system': f"请使用系统信息工具获取: {user_input}"
+{{
+    "type": "weather",
+    "city": "{user_input}",
+    "temperature": {{"current": "具体温度值", "high": "最高温度", "low": "最低温度"}},
+    "condition": "天气现象",
+    "humidity": "湿度值",
+    "wind": "风力风向", 
+    "airQuality": "空气质量状况",
+    "suggestions": ["生活建议1", "生活建议2", "生活建议3"],
+    "details": "天气详细描述"
+}}
+
+重要：只返回JSON数据，不要添加任何解释文字。""",
+            'news': f"""请搜索关于 '{user_input}' 的最新新闻，获取信息后严格按照以下JSON格式返回：
+
+{{
+    "type": "news",
+    "topic": "{user_input}",
+    "articles": [
+        {{
+            "title": "新闻标题",
+            "summary": "新闻摘要",
+            "source": "新闻来源",
+            "time": "发布时间"
+        }}
+    ],
+    "summary": "整体新闻概述",
+    "keyPoints": ["关键点1", "关键点2", "关键点3"]
+}}
+
+重要：只返回JSON数据，不要添加任何解释文字。""",
+            'extract': f"""请使用内容提取工具从URL：{user_input} 提取内容，分析后严格按照以下JSON格式返回：
+
+{{
+    "type": "extract",
+    "url": "{user_input}",
+    "title": "网页标题",
+    "description": "网页描述",
+    "mainContent": "主要内容摘要",
+    "keyFeatures": ["特色功能1", "特色功能2", "特色功能3"],
+    "technologies": ["技术栈1", "技术栈2"],
+    "summary": "整体分析总结"
+}}
+
+重要：只返回JSON数据，不要添加任何解释文字。""",
+            'research': f"""请对主题 '{user_input}' 进行研究：使用搜索工具获取信息，如有重要链接则提取内容，综合分析后严格按照以下JSON格式返回：
+
+{{
+    "type": "research",
+    "topic": "{user_input}",
+    "introduction": "研究背景介绍",
+    "keyFindings": ["核心发现1", "核心发现2", "核心发现3"],
+    "detailedAnalysis": "详细分析内容",
+    "trends": ["趋势1", "趋势2", "趋势3"],
+    "challenges": ["挑战1", "挑战2"],
+    "opportunities": ["机会1", "机会2"],
+    "conclusion": "研究结论",
+    "sources": ["资料来源1", "资料来源2"]
+}}
+
+重要：只返回JSON数据，不要添加任何解释文字。""",
+            'calculate': f"""请使用计算工具计算表达式：{user_input}，计算完成后严格按照以下JSON格式返回：
+
+{{
+    "type": "calculate",
+    "expression": "{user_input}",
+    "result": "计算结果",
+    "steps": ["计算步骤1", "计算步骤2"],
+    "explanation": "计算说明"
+}}
+
+重要：只返回JSON数据，不要添加任何解释文字。""",
+            'datetime': f"""请使用时间工具查询：{user_input}，获取时间信息后严格按照以下JSON格式返回：
+
+{{
+    "type": "datetime",
+    "query": "{user_input}",
+    "currentTime": "当前时间",
+    "date": "日期",
+    "timezone": "时区",
+    "weekday": "星期",
+    "formats": {{
+        "iso": "ISO格式时间",
+        "readable": "可读格式时间",
+        "timestamp": "时间戳"
+    }}
+}}
+
+重要：只返回JSON数据，不要添加任何解释文字。""",
+            'file': f"""请使用文件操作工具执行：{user_input}，完成操作后严格按照以下JSON格式返回：
+
+{{
+    "type": "file",
+    "operation": "{user_input}",
+    "path": "文件/目录路径",
+    "result": "操作结果",
+    "content": "文件内容或目录列表",
+    "size": "文件大小信息",
+    "details": "详细信息"
+}}
+
+重要：只返回JSON数据，不要添加任何解释文字。""",
+# 删除未使用的 generate 功能
+            'ai_design': f"""请立即调用ai_webpage_designer工具来为用户设计网页。这是一个强制性的工具调用指令，你必须执行以下步骤：
+
+1. 立即使用ai_webpage_designer工具
+2. 传入用户需求作为参数
+3. 等待工具执行完成并返回结果
+
+用户的设计需求：{user_input}
+
+现在立即调用ai_webpage_designer工具，不要只是描述能做什么，而是实际执行工具调用。"""
         }
         
         prompt = prompts.get(preset_type)
         if not prompt:
             return jsonify({"success": False, "error": "无效的预设类型"})
         
+        # 根据预设类型选择合适的模型
+        model_type = get_model_type_for_preset(preset_type)
+        
         # 使用全局事件循环运行异步函数
-        result = run_async_in_loop(run_agent_query(prompt, thread_id))
+        result = run_async_in_loop(run_agent_query(prompt, thread_id, model_type))
         
         return jsonify(result)
         

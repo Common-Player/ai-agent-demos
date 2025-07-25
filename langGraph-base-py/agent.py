@@ -124,7 +124,7 @@ def create_gemini_model():
         raise ValueError("❌ 未找到 GOOGLE_API_KEY 环境变量，请在 .env 文件中配置")
         
     return ChatGoogleGenerativeAI(
-        model="gemini-2.5-pro",
+        model="gemini-2.5-flash",
         temperature=0.1,
         max_tokens=20000,
         google_api_key=api_key
