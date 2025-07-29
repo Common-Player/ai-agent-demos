@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Agent Core - 火焰之心</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --ember-glow-1: #ff4800;
+            --ember-glow-2: #ff8c00;
+            --ember-glow-3: #ffc700;
+            --text-color: #f0e6d2;
+            --text-muted: #a0937d;
+            --border-color: rgba(255, 140, 0, 0.2);
+            --card-bg: rgba(24, 18, 12, 0.7);
+            --card-bg-solid: #18120c;
+            --font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* --- 背景余烬动画 --- */
+        .ember-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .ember {
+            position: absolute;
+            bottom: -20px;
+            background-color: var(--ember-glow-2);
+            border-radius: 50%;
+            opacity: 0;
+            animation: rise 10s infinite ease-in;
+            box-shadow: 0 0 10px var(--ember-glow-1), 0 0 20px var(--ember-glow-1), 0 0 30px var(--ember-glow-2);
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100vh) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* --- 主布局 --- */
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            animation: fire-text 5s ease-in-out infinite;
+            background: linear-gradient(90deg, var(--ember-glow-3), var(--ember-glow-2), var(--ember-glow-1));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(255, 100, 0, 0.5);
+        }
+
+        @keyframes fire-text {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .ambient-info {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-areas:
+                "news research browser"
+                "calculator research file";
+            gap: 25px;
+        }
+
+        /* --- 模块卡片基础样式 --- */
+        .module {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .module:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 25px rgba(255, 100, 0, 0.3), 0 0 40px rgba(255, 100, 0, 0.2);
+        }
+
+        .module::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(115deg, transparent 40%, rgba(255, 215, 0, 0.1), transparent 60%);
+            transform: translateX(-100%);
+            transition: transform 0.7s ease;
+        }
+
+        .module:hover::before {
+            transform: translateX(100%);
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .module-icon {
+            width: 40px;
+            height: 40px;
+            color: var(--ember-glow-2);
+            filter: drop-shadow(0 0 5px var(--ember-glow-2));
+        }
+
+        .module-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .module-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- 特定模块布局 --- */
+        #research-module { grid-area: research; }
+        #news-module { grid-area: news; }
+        #browser-module { grid-area: browser; }
+        #calculator-module { grid-area: calculator; }
+        #file-module { grid-area: file; }
+
+        /* --- 输入控件样式 --- */
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-input {
+            flex-grow: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .card-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .card-input:focus {
+            border-color: var(--ember-glow-2);
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
+        }
+
+        .submit-btn, .auto-request-btn {
+            padding: 12px 20px;
+            border: 1px solid var(--ember-glow-1);
+            background: linear-gradient(145deg, var(--ember-glow-2), var(--ember-glow-1));
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .submit-btn:hover, .auto-request-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--ember-glow-1);
+        }
+
+        .submit-btn:disabled, .auto-request-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .auto-request-btn {
+            width: 100%;
+        }
+
+        /* --- 结果和加载样式 --- */
+        .result-container {
+            background: var(--card-bg-solid);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .default-text {
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: var(--ember-glow-2);
+            font-weight: 500;
+            height: 100%;
+        }
+
+        .fire-loader {
+            width: 50px;
+            height: 50px;
+            position: relative;
+            animation: rotate-loader 2s linear infinite;
+        }
+        .fire-loader .dot {
+            width: 40%;
+            height: 40%;
+            position: absolute;
+            background: var(--ember-glow-3);
+            border-radius: 50%;
+            animation: flicker-loader 1.5s ease-in-out infinite;
+        }
+        .fire-loader .dot:nth-child(1) { top: 0; left: 0; animation-delay: 0s; }
+        .fire-loader .dot:nth-child(2) { top: 0; right: 0; animation-delay: -0.4s; background-color: var(--ember-glow-2); }
+        .fire-loader .dot:nth-child(3) { bottom: 0; left: 0; animation-delay: -0.8s; background-color: var(--ember-glow-2); }
+        .fire-loader .dot:nth-child(4) { bottom: 0; right: 0; animation-delay: -1.2s; background-color: var(--ember-glow-1); }
+
+        @keyframes rotate-loader {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes flicker-loader {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; box-shadow: 0 0 5px var(--ember-glow-2); }
+            50% { transform: scale(1); opacity: 1; box-shadow: 0 0 15px var(--ember-glow-2); }
+        }
+
+        /* --- 结构化数据展示 --- */
+        .result-text { white-space: pre-wrap; line-height: 1.6; }
+        .result-container h3 { color: var(--ember-glow-2); margin-bottom: 15px; font-size: 1.2rem; }
+        .result-container h4 { color: var(--ember-glow-3); margin: 15px 0 8px 0; font-size: 1rem; border-left: 3px solid var(--ember-glow-2); padding-left: 10px; }
+        .result-container ul, .result-container ol { padding-left: 20px; }
+        .result-container li { margin-bottom: 8px; line-height: 1.5; }
+        .result-container p { margin-bottom: 10px; line-height: 1.6; color: var(--text-muted); }
+        .result-container strong { color: var(--text-color); font-weight: 600; }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 5px;
+            border-bottom: 1px solid rgba(255, 140, 0, 0.1);
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row .label { font-weight: 600; color: var(--text-muted); }
+        .info-row .value { color: var(--text-color); }
+
+        .article {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--ember-glow-1);
+        }
+        .article h4 { border-left: none; padding-left: 0; margin-top: 0; }
+        .article-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+
+        .current-time, .temperature {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 15px var(--ember-glow-2);
+            color: var(--ember-glow-3);
+        }
+        
+        .expression {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            color: var(--ember-glow-3);
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--ember-glow-1);
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        /* --- 滚动条样式 --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: var(--ember-glow-1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--ember-glow-2); }
+
+        /* --- 响应式设计 --- */
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-areas:
+                    "research research"
+                    "news browser"
+                    "calculator file";
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .dashboard-header h1 { font-size: 2.2rem; }
+            .main-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "research"
+                    "news"
+                    "browser"
+                    "calculator"
+                    "file";
+            }
+            .ambient-info { flex-direction: column; }
+            .module { padding: 20px; }
+            .input-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ember-container"></div>
+
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>🔥 AI Agent Core</h1>
+        </header>
+
+        <div class="ambient-info">
+            <!-- 当前时间区域 -->
+            <div class="module" id="time-module" style="animation-delay: 0.1s;">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <h3 class="module-title">时间信息</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="getCurrentTime()">获取当前时间</button>
+                    <div id="time-result" class="default-text" style="margin-top: 15px;">点击按钮获取</div>
+                </div>
+            </div>
+
+            <!-- 天气区域 -->
+            <div class="module" id="weather-module" style="animation-delay: 0.2s;">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                    <h3 class="module-title">天气查询</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="getWeatherInfo()">获取天气信息</button>
+                    <div id="weather-result" class="default-text" style="margin-top: 15px;">点击按钮获取</div>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-grid">
+            <!-- 问题研究区域 (核心) -->
+            <div class="module" id="research-module" style="animation-delay: 0.3s;">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.63 3.18a1.5 1.5 0 0 0-2.26 0L8.63 8.01a1.5 1.5 0 0 0 0 2.26l4.74 4.74a1.5 1.5 0 0 0 2.26 0l4.74-4.74a1.5 1.5 0 0 0 0-2.26Z"></path><path d="M11.5 11.5 2.25 2.25"></path><path d="m18 18-3.5-3.5"></path><path d="m22 2-1.5 1.5"></path><path d="M13.5 22 12 20.5"></path><path d="M2 13.5 3.5 12"></path><path d="M3.91 3.91 2.5 2.5"></path></svg>
+                    <h3 class="module-title">研究分析</h3>
+                </div>
+                <div class="module-content">
+                    <div class="input-container">
+                        <input type="text" id="research-input" class="card-input" placeholder="输入研究主题，点燃智慧火花..." onkeypress="handleResearchKeyPress(event)" />
+                        <button class="submit-btn" onclick="doResearch()">研究</button>
+                    </div>
+                    <div id="research-result" class="default-text">输入主题，开始深度探索</div>
+                </div>
+            </div>
+
+            <!-- 今日新闻区域 -->
+            <div class="module" id="news-module" style="animation-delay: 0.4s;">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4"></path><path d="M16 2v20"></path><path d="M12 2v20"></path><path d="M12 7h4"></path><path d="M12 12h4"></path><path d="M12 17h4"></path></svg>
+                    <h3 class="module-title">今日新闻</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="getNewsInfo()">获取今日新闻</button>
+                    <div id="news-result" class="default-text" style="margin-top: 15px;">点击获取最新动态</div>
+                </div>
+            </div>
+
+            <!-- 网页浏览区域 -->
+            <div class="module" id="browser-module" style="animation-delay: 0.5s;">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                    <h3 class="module-title">网页内容</h3>
+                </div>
+                <div class="module-content">
+                    <div class="input-container">
+                        <input type="url" id="url-input" class="card-input" placeholder="输入网址..." onkeypress="handleUrlKeyPress(event)" />
+                        <button class="submit-btn" onclick="extractContent()">提取</button>
+                    </div>
+                    <div id="browser-result" class="default-text">输入网址，提取核心信息</div>
+                </div>
+            </div>
+
+            <!-- 计算器区域 -->
+            <div class="module" id="calculator-module" style="animation-delay: 0.6s;">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="10" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+                    <h3 class="module-title">智能计算</h3>
+                </div>
+                <div class="module-content">
+                    <div class="input-container">
+                        <input type="text" id="calc-input" class="card-input" placeholder="输入数学表达式..." onkeypress="handleCalcKeyPress(event)" />
+                        <button class="submit-btn" onclick="doCalculate()">计算</button>
+                    </div>
+                    <div id="calc-result" class="default-text">输入表达式，获得结果</div>
+                </div>
+            </div>
+
+            <!-- 文件内容展示区域 -->
+            <div class="module" id="file-module" style="animation-delay: 0.7s;">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+                    <h3 class="module-title">文件管理</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="showFileContent()">查看指定文件</button>
+                    <div id="file-result" class="default-text" style="margin-top: 15px;">点击查看文件内容</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- 动态余烬背景 ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.querySelector('.ember-container');
+            const emberCount = 20;
+            for (let i = 0; i < emberCount; i++) {
+                const ember = document.createElement('div');
+                ember.className = 'ember';
+                const size = Math.random() * 5 + 2;
+                ember.style.width = `${size}px`;
+                ember.style.height = `${size}px`;
+                ember.style.left = `${Math.random() * 100}%`;
+                ember.style.animationDuration = `${Math.random() * 10 + 8}s`;
+                ember.style.animationDelay = `${Math.random() * 10}s`;
+                container.appendChild(ember);
+            }
+        });
+
+        // --- AI Agent API (保持不变) ---
+        window.aiAgentAPI = {
+            baseURL: 'http://localhost:8080',
+            async callAPI(endpoint, input) {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input: input, thread_id: 'dashboard_' + Date.now() })
+                    });
+                    const data = await response.json();
+                    if (!data.success) return '查询失败: ' + (data.error || '未知错误');
+                    return data.response;
+                } catch (error) {
+                    return '网络错误: ' + error.message;
+                }
+            },
+            weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+            news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+            extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+            research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+            calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+            datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+            file: (operation) => window.aiAgentAPI.callAPI('file', operation)
+        };
+
+        // --- UI 更新函数 (已适配新设计) ---
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="loading-container">
+                    <div class="fire-loader">
+                        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    </div>
+                    <span>正在处理中...</span>
+                </div>`;
+        }
+
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            try {
+                const jsonStart = result.indexOf('{');
+                const jsonEnd = result.lastIndexOf('}');
+                const jsonData = (jsonStart !== -1 && jsonEnd > jsonStart) ? result.substring(jsonStart, jsonEnd + 1) : result;
+                const data = JSON.parse(jsonData);
+                const formattedHTML = formatJSONData(data);
+                element.innerHTML = `<div class="result-container">${formattedHTML}</div>`;
+            } catch (e) {
+                element.innerHTML = `<div class="result-container"><div class="result-text">${result}</div></div>`;
+            }
+        }
+
+        function formatJSONData(data) {
+            if (!data || !data.type) return `<div class="result-text">${JSON.stringify(data, null, 2)}</div>`;
+            switch (data.type) {
+                case 'weather': return formatWeatherData(data);
+                case 'news': return formatNewsData(data);
+                case 'extract': return formatExtractData(data);
+                case 'research': return formatResearchData(data);
+                case 'calculate': return formatCalculateData(data);
+                case 'datetime': return formatDateTimeData(data);
+                case 'file': return formatFileData(data);
+                default: return `<div class="result-text">${JSON.stringify(data, null, 2)}</div>`;
+            }
+        }
+
+        // --- 数据格式化函数 (已适配新样式) ---
+        function formatWeatherData(data) {
+            return `
+                <h3>${data.city || '未知城市'} 天气</h3>
+                <div class="temperature">${data.temperature?.current || 'N/A'}</div>
+                <div class="info-row"><span class="label">天气:</span><span class="value">${data.condition || '未知'}</span></div>
+                <div class="info-row"><span class="label">温度范围:</span><span class="value">${data.temperature?.low || 'N/A'} ~ ${data.temperature?.high || 'N/A'}</span></div>
+                <div class="info-row"><span class="label">湿度:</span><span class="value">${data.humidity || 'N/A'}</span></div>
+                <div class="info-row"><span class="label">风力:</span><span class="value">${data.wind || 'N/A'}</span></div>
+                ${data.suggestions?.length > 0 ? `<h4>生活建议:</h4><ul>${data.suggestions.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
+            `;
+        }
+
+        function formatNewsData(data) {
+            return `
+                <h3>${data.topic}</h3>
+                <p><strong>摘要:</strong> ${data.summary}</p>
+                ${data.articles.map(article => `
+                    <div class="article">
+                        <h4>${article.title}</h4>
+                        <p class="article-meta">${article.source} | ${article.time}</p>
+                        <p>${article.summary}</p>
+                    </div>
+                `).join('')}
+                <h4>关键要点:</h4>
+                <ul>${data.keyPoints.map(point => `<li>${point}</li>`).join('')}</ul>
+            `;
+        }
+        
+        function formatExtractData(data) {
+            return `
+                <h3>${data.title}</h3>
+                <p><strong>URL:</strong> <a href="${data.url}" target="_blank" style="color: var(--ember-glow-2); word-break: break-all;">${data.url}</a></p>
+                <p><strong>描述:</strong> ${data.description}</p>
+                <h4>主要内容:</h4><p>${data.mainContent}</p>
+                <h4>总结:</h4><p>${data.summary}</p>
+            `;
+        }
+
+        function formatResearchData(data) {
+            return `
+                <h3>${data.topic} 研究报告</h3>
+                <p>${data.introduction}</p>
+                <h4>核心发现:</h4><ul>${data.keyFindings.map(f => `<li>${f}</li>`).join('')}</ul>
+                <h4>详细分析:</h4><p>${data.detailedAnalysis}</p>
+                <h4>发展趋势:</h4><ul>${data.trends.map(t => `<li>${t}</li>`).join('')}</ul>
+                <h4>结论:</h4><p>${data.conclusion}</p>
+            `;
+        }
+
+        function formatCalculateData(data) {
+            return `
+                <h3>计算结果</h3>
+                <div class="expression">${data.expression}</div>
+                <div class="result-value">${data.result}</div>
+                <h4>计算步骤:</h4>
+                <ol>${data.steps.map(step => `<li>${step}</li>`).join('')}</ol>
+            `;
+        }
+
+        function formatDateTimeData(data) {
+            return `
+                <h3>时间信息</h3>
+                <div class="current-time">${data.currentTime}</div>
+                <div class="info-row"><span class="label">日期:</span><span class="value">${data.date}</span></div>
+                <div class="info-row"><span class="label">星期:</span><span class="value">${data.weekday}</span></div>
+                <div class="info-row"><span class="label">时区:</span><span class="value">${data.timezone}</span></div>
+                <h4>其他格式:</h4>
+                <div class="info-row"><span class="label">ISO:</span><span class="value" style="font-family: monospace;">${data.formats.iso}</span></div>
+                <div class="info-row"><span class="label">时间戳:</span><span class="value" style="font-family: monospace;">${data.formats.timestamp}</span></div>
+            `;
+        }
+
+        function formatFileData(data) {
+            return `
+                <h3>文件操作</h3>
+                <div class="info-row"><span class="label">路径:</span><span class="value" style="word-break: break-all;">${data.path}</span></div>
+                <div class="info-row"><span class="label">操作:</span><span class="value">${data.operation}</span></div>
+                <div class="info-row"><span class="label">结果:</span><span class="value">${data.result}</span></div>
+                <h4>内容预览:</h4>
+                <pre style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word;">${data.content}</pre>
+            `;
+        }
+
+        // --- 功能触发函数 (保持不变) ---
+        async function getWeatherInfo() {
+            const btn = event.target;
+            btn.disabled = true;
+            showLoading('weather-result');
+            const result = await window.aiAgentAPI.weather('北京');
+            showResult('weather-result', result);
+            btn.disabled = false;
+        }
+
+        async function getNewsInfo() {
+            const btn = event.target;
+            btn.disabled = true;
+            showLoading('news-result');
+            const result = await window.aiAgentAPI.news('本日新闻');
+            showResult('news-result', result);
+            btn.disabled = false;
+        }
+
+        async function extractContent() {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) { showResult('browser-result', '请输入有效的网址'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            showLoading('browser-result');
+            const result = await window.aiAgentAPI.extract(url);
+            showResult('browser-result', result);
+            btn.disabled = false;
+        }
+
+        async function doResearch() {
+            const topic = document.getElementById('research-input').value.trim();
+            if (!topic) { showResult('research-result', '请输入研究主题'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            showLoading('research-result');
+            const result = await window.aiAgentAPI.research(topic);
+            showResult('research-result', result);
+            btn.disabled = false;
+        }
+
+        async function doCalculate() {
+            const expression = document.getElementById('calc-input').value.trim();
+            if (!expression) { showResult('calc-result', '请输入数学表达式'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            showLoading('calc-result');
+            const result = await window.aiAgentAPI.calculate(expression);
+            showResult('calc-result', result);
+            btn.disabled = false;
+        }
+
+        async function getCurrentTime() {
+            const btn = event.target;
+            btn.disabled = true;
+            showLoading('time-result');
+            const result = await window.aiAgentAPI.datetime('current');
+            showResult('time-result', result);
+            btn.disabled = false;
+        }
+
+        async function showFileContent() {
+            const btn = event.target;
+            btn.disabled = true;
+            showLoading('file-result');
+            const targetPath = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
+            const result = await window.aiAgentAPI.file(`read:${targetPath}`);
+            showResult('file-result', result);
+            btn.disabled = false;
+        }
+
+        function handleUrlKeyPress(event) { if (event.key === 'Enter') extractContent(); }
+        function handleResearchKeyPress(event) { if (event.key === 'Enter') doResearch(); }
+        function handleCalcKeyPress(event) { if (event.key === 'Enter') doCalculate(); }
+
+    </script>
+
+<script>
+// AI网页设计师 - 高级功能集成
+// 检查是否已经存在aiAgentAPI，如果不存在才创建
+if (!window.aiAgentAPI) {
+    window.aiAgentAPI = {
+        baseURL: 'http://localhost:8080',
+        
+        // 通用API调用函数
+        async callAPI(endpoint, input) {
+            try {
+                const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        input: input, 
+                        thread_id: 'ai_webpage_' + Date.now() 
+                    })
+                });
+                const data = await response.json();
+                return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+            } catch (error) {
+                return '网络错误: ' + error.message;
+            }
+        },
+        
+        // 各种功能的便捷方法
+        weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+        news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+        extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+        research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+        calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+        datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+        file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+        system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+    };
+    console.log('🔧 创建了简化版 aiAgentAPI');
+} else {
+    console.log('✅ 检测到已存在完整版 aiAgentAPI，跳过重复创建');
+}
+
+// 智能结果显示函数 - 尝试使用现有的JSON处理逻辑
+function showSmartResult(element, result) {
+    // 检查是否存在完整的JSON处理函数
+    if (typeof window.parseAndShowResult === 'function') {
+        // 为element创建临时ID（如果没有）
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('🎯 使用完整版JSON处理逻辑显示结果');
+        window.parseAndShowResult(element.id, result);
+    } else if (typeof window.showResult === 'function') {
+        // 使用showResult函数
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('📋 使用showResult函数显示结果');
+        window.showResult(element.id, result);
+    } else {
+        // 回退到简单显示
+        console.log('📝 使用简单文本显示结果');
+        element.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+    }
+}
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        
+        // 为输入框阻止事件冒泡，这样点击输入框不会触发AI请求
+        const inputs = element.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.style.cursor = 'text';
+            input.addEventListener('click', function(event) {
+                event.stopPropagation(); // 阻止事件冒泡
+                console.log('📝 输入框可正常编辑');
+            });
+        });
+        
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body, .result-container') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div class="loading">正在处理中...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    const cityInput = this.querySelector('input[type="text"]');
+                    const city = cityInput ? cityInput.value.trim() || '北京' : '北京';
+                    result = await window.aiAgentAPI.weather(city);
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    const topicInput = this.querySelector('input[type="text"]');
+                    const topic = topicInput ? topicInput.value.trim() || '科技新闻' : '科技新闻';
+                    result = await window.aiAgentAPI.news(topic);
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    const urlInput = this.querySelector('input[type="text"], input[type="url"]');
+                    if (urlInput && urlInput.value.trim()) {
+                        result = await window.aiAgentAPI.extract(urlInput.value.trim());
+                    } else {
+                        result = '请在输入框中输入URL，然后点击卡片空白区域触发提取\n示例: https://www.example.com';
+                    }
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    const researchInput = this.querySelector('input[type="text"], textarea');
+                    const topic = researchInput ? researchInput.value.trim() || '人工智能发展趋势' : '人工智能发展趋势';
+                    result = await window.aiAgentAPI.research(topic);
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    const calcInput = this.querySelector('input[type="text"]');
+                    const expr = calcInput ? calcInput.value.trim() || 'sqrt(16) + log(10)' : 'sqrt(16) + log(10)';
+                    result = await window.aiAgentAPI.calculate(expr);
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    const fileInput = this.querySelector('input[type="text"]');
+                    const operation = fileInput ? fileInput.value.trim() || 'list:.' : 'list:.';
+                    result = await window.aiAgentAPI.file(operation);
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n输入框可正常编辑，点击卡片其他区域触发AI请求';
+                }
+                
+                // 使用智能结果显示
+                showSmartResult(loadingElement, result);
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+    console.log('💡 提示：输入框可正常编辑，点击卡片其他区域触发AI请求');
+});
+</script>
+</body>
+</html>

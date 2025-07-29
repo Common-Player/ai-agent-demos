@@ -1,0 +1,12 @@
+# Google Gemini API 密钥
+GOOGLE_API_KEY=your_google_api_key_here
+
+# Tavily API 密钥
+TAVILY_API_KEY=your_tavily_api_key_here
+
+# Flask配置
+FLASK_SECRET_KEY=779b1222ec84287668a81e0853ba8b8907bf9289d3efe1616f50467b3efb3c2c
+
+# Supabase配置
+SUPABASE_URL=https://srohrgfegliprclhwwwa.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyb2hyZ2ZlZ2xpcHJjbGh3d3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3NjY2NTksImV4cCI6MjA2OTM0MjY1OX0.JAKW615ymm7tAV4j41_c1zKLKRdp9IIdSE3NnR3w7N8 

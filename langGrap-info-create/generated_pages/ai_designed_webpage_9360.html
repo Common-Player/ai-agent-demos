@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>森林大冒险 - 探索者仪表盘</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --forest-deep-green: #1a2e28;
+            --forest-mid-green: #2a483f;
+            --forest-light-green: #4f7566;
+            --parchment-bg: #f5eeda;
+            --wood-brown: #4d3a2a;
+            --text-light: #e8e4d9;
+            --text-dark: #3a2e24;
+            --accent-gold: #e8b96a;
+            --accent-red: #c95b5b;
+            --font-title: 'ZCOOL KuaiLe', cursive;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--forest-deep-green);
+            background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 46, 40, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: -1;
+        }
+
+        .adventure-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .adventure-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .adventure-header h1 {
+            font-family: var(--font-title);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px var(--accent-gold), 0 0 15px var(--forest-light-green), 0 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .adventure-header p {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: var(--text-light);
+            opacity: 0.9;
+            letter-spacing: 1px;
+        }
+
+        .adventure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 2rem;
+        }
+
+        .adventure-card {
+            background: rgba(42, 72, 63, 0.75);
+            border: 3px solid var(--wood-brown);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            animation: popIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        
+        @keyframes popIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .adventure-card:nth-child(1) { animation-delay: 0.1s; }
+        .adventure-card:nth-child(2) { animation-delay: 0.2s; }
+        .adventure-card:nth-child(3) { animation-delay: 0.3s; }
+        .adventure-card:nth-child(4) { animation-delay: 0.4s; }
+        .adventure-card:nth-child(5) { animation-delay: 0.15s; }
+        .adventure-card:nth-child(6) { animation-delay: 0.25s; }
+        .adventure-card:nth-child(7) { animation-delay: 0.35s; }
+
+
+        .adventure-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-gold);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px dashed rgba(77, 58, 42, 0.5);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--accent-gold);
+        }
+
+        .card-title {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .adventure-input {
+            flex-grow: 1;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--wood-brown);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--text-light);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .adventure-input::placeholder {
+            color: rgba(232, 228, 217, 0.6);
+        }
+
+        .adventure-input:focus {
+            background: rgba(0,0,0,0.4);
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 10px rgba(232, 185, 106, 0.5);
+        }
+
+        .adventure-button {
+            padding: 0.75rem 1.2rem;
+            background: var(--wood-brown);
+            color: var(--parchment-bg);
+            border: 2px solid #6a513b;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-title);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 0 #3a2e24;
+        }
+
+        .adventure-button:hover {
+            background: #6a513b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #3a2e24;
+        }
+
+        .adventure-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #3a2e24;
+        }
+        
+        .adventure-button:disabled {
+            background: #5e5043;
+            cursor: not-allowed;
+            transform: translateY(0);
+            box-shadow: 0 4px 0 #3a2e24;
+            opacity: 0.7;
+        }
+
+        .auto-button {
+            width: 100%;
+        }
+
+        .result-area {
+            flex-grow: 1;
+            background: var(--parchment-bg);
+            color: var(--text-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 2px solid #d3c0a5;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-style: italic;
+            overflow-y: auto;
+        }
+        
+        .result-area::-webkit-scrollbar {
+            width: 10px;
+        }
+        .result-area::-webkit-scrollbar-track {
+            background: #e0d5bc;
+            border-radius: 5px;
+        }
+        .result-area::-webkit-scrollbar-thumb {
+            background: var(--wood-brown);
+            border-radius: 5px;
+            border: 2px solid #e0d5bc;
+        }
+
+        .loading-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            font-style: normal;
+        }
+        .loading-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .loading-dots span {
+            width: 12px;
+            height: 12px;
+            background-color: var(--forest-light-green);
+            border-radius: 50%;
+            animation: pulse 1.4s infinite ease-in-out both;
+        }
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Result Formatting */
+        .result-content {
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            font-style: normal;
+        }
+        .result-content h4 {
+            font-family: var(--font-title);
+            color: var(--wood-brown);
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(77, 58, 42, 0.3);
+        }
+        .result-content ul, .result-content ol {
+            padding-left: 1.5rem;
+            line-height: 1.6;
+        }
+        .result-content li {
+            margin-bottom: 0.5rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem 1rem;
+            margin-bottom: 1rem;
+        }
+        .info-grid .label {
+            font-weight: 700;
+            color: var(--forest-mid-green);
+        }
+        .info-grid .value {
+            font-weight: 500;
+        }
+        .article-item {
+            border-left: 4px solid var(--forest-light-green);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        .article-item h5 {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+        .article-item p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .article-meta {
+            font-size: 0.8rem;
+            color: #7a6a5a;
+            margin-bottom: 0.5rem;
+        }
+        .code-block {
+            background: #e8e4d9;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0.5rem 0;
+            border: 1px solid #d3c0a5;
+        }
+        .big-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--forest-mid-green);
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        /* Specific Card Layouts */
+        .research-card, .browser-card {
+            grid-column: span 1;
+            grid-row: span 2;
+        }
+        .file-card {
+            grid-column: 1 / -1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .research-card, .browser-card, .file-card {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+        }
+        @media (max-width: 820px) {
+            .adventure-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 1.5rem 1rem;
+            }
+            .adventure-card {
+                padding: 1rem;
+            }
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="adventure-container">
+        <header class="adventure-header">
+            <h1>森林大冒险</h1>
+            <p>探索未知，发现新知</p>
+        </header>
+
+        <main class="adventure-grid">
+            <!-- 天气观测站 -->
+            <section class="adventure-card" id="weather-station">
+                <header class="card-header">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.003a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2.003ZM12 20a8 8 0 1 1 8-8 8.01 8.01 0 0 1-8 8Z"/><path d="M12 4a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0V5a1 1 0 0 0-1-1ZM5.636 5.639a1 1 0 0 0-1.414 0l-1.414 1.414a1 1 0 0 0 1.414 1.414l1.414-1.414a1 1 0 0 0 0-1.414ZM20 11h-2a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2ZM4.222 12.707l-1.414-1.414a1 1 0 0 0-1.414 1.414l1.414 1.414a1 1 0 0 0 1.414-1.414ZM12 17a5 5 0 1 0-5-5 5.006 5.006 0 0 0 5 5Zm0-8a3 3 0 1 1-3 3 3.003 3.003 0 0 1 3-3Z"/></svg>
+                    <h2 class="card-title">天气观测</h2>
+                </header>
+                <div class="card-content">
+                    <button class="adventure-button auto-button" onclick="getWeatherInfo()">勘测当前天气</button>
+                    <div id="weather-result" class="result-area" style="margin-top: 1rem;">点击按钮开始勘测</div>
+                </div>
+            </section>
+
+            <!-- 情报驿站 (新闻) -->
+            <section class="adventure-card" id="news-post">
+                <header class="card-header">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.561 3.439a1 1 0 0 0-1.122 0l-1.58 1.264a1 1 0 0 0-.3.7v13.194a1 1 0 0 0 .3.7l1.58 1.264a1 1 0 0 0 1.122 0l1.939-1.551a1 1 0 0 0 .5-.865V5.855a1 1 0 0 0-.5-.865ZM21 18.145l-1-1.143v-10l1-1.142ZM16 20.094V3.906a1 1 0 0 0-1.6-.8L3.8 10.4a1 1 0 0 0 0 1.6l10.6 7.294A1 1 0 0 0 16 20.094Z"/></svg>
+                    <h2 class="card-title">情报驿站</h2>
+                </header>
+                <div class="card-content">
+                    <button class="adventure-button auto-button" onclick="getNewsInfo()">获取最新情报</button>
+                    <div id="news-result" class="result-area" style="margin-top: 1rem;">等待来自远方的情报...</div>
+                </div>
+            </section>
+
+            <!-- 遗迹探勘 (网页) -->
+            <section class="adventure-card browser-card" id="ruins-exploration">
+                <header class="card-header">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8.009 8.009 0 0 1-8 8Z"/><path d="m14.828 7.757-4.242 4.243a1 1 0 0 0 0 1.414l4.242 4.243a1 1 0 1 0 1.414-1.414L12.364 12l3.878-3.879a1 1 0 0 0-1.414-1.414Z"/><path d="m9.172 7.757-1.415 1.414L11.636 13l-3.879 3.879a1 1 0 0 0 1.415 1.414l4.242-4.242a1 1 0 0 0 0-1.415Z"/></svg>
+                    <h2 class="card-title">遗迹探勘</h2>
+                </header>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="url" id="url-input" class="adventure-input" placeholder="输入遗迹坐标 (URL)" onkeypress="handleUrlKeyPress(event)">
+                        <button class="adventure-button" onclick="extractContent()">探勘</button>
+                    </div>
+                    <div id="browser-result" class="result-area">输入坐标，探勘未知遗迹。</div>
+                </div>
+            </section>
+
+            <!-- 课题研究 -->
+            <section class="adventure-card research-card" id="topic-research">
+                <header class="card-header">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396a1 1 0 0 0 1.414-1.414l-4.396-4.396A8 8 0 1 0 10 18Zm0-14a6 6 0 1 1-6 6 6.007 6.007 0 0 1 6-6Z"/><path d="M11.5 10.5a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v4.5Z"/><path d="M10 11.5a1 1 0 0 1-1-1H4.5a1 1 0 0 1 0-2H9a1 1 0 0 1 1 1v3.5Z"/></svg>
+                    <h2 class="card-title">课题研究</h2>
+                </header>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="text" id="research-input" class="adventure-input" placeholder="输入研究课题" onkeypress="handleResearchKeyPress(event)">
+                        <button class="adventure-button" onclick="doResearch()">研究</button>
+                    </div>
+                    <div id="research-result" class="result-area">深入研究，揭示事物本质。</div>
+                </div>
+            </section>
+
+            <!-- 炼金计算 (计算器) -->
+            <section class="adventure-card" id="alchemy-calculator">
+                <header class="card-header">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a1 1 0 0 0-1 1v3.268a2 2 0 0 0-1.5 1.932v1.8a4 4 0 0 0-3.1 3.9v4.1a1 1 0 0 0 1 1h9.2a1 1 0 0 0 1-1v-4.1a4 4 0 0 0-3.1-3.9v-1.8a2 2 0 0 0-1.5-1.932V3a1 1 0 0 0-1-1Zm-3.6 12.5a1 1 0 0 1-.8.4h-1.2a1 1 0 1 1 0-2h1.2a1 1 0 0 1 .8.4Zm8.8.4a1 1 0 0 1-.8-.4 1 1 0 0 1 .8-1.6h1.2a1 1 0 1 1 0 2Z"/><path d="M12 22a1 1 0 0 0 1-1v-2a1 1 0 0 0-2 0v2a1 1 0 0 0 1 1Z"/></svg>
+                    <h2 class="card-title">炼金计算</h2>
+                </header>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="text" id="calc-input" class="adventure-input" placeholder="输入炼金公式" onkeypress="handleCalcKeyPress(event)">
+                        <button class="adventure-button" onclick="doCalculate()">计算</button>
+                    </div>
+                    <div id="calc-result" class="result-area">输入公式，开始神秘的计算。</div>
+                </div>
+            </section>
+
+            <!-- 时间沙漏 -->
+            <section class="adventure-card" id="time-hourglass">
+                <header class="card-header">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6a1 1 0 0 0-1 1v5.44a3 3 0 0 0 .42 1.58l3.16 4.73-3.16 4.73A3 3 0 0 0 5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1 3 3 0 0 0-.42-1.58l-3.16-4.73 3.16-4.73A3 3 0 0 0 19 8.44V3a1 1 0 0 0-1-1Zm-1 18H7a1 1 0 0 1 .17-.53l3-4.47h1.66l3 4.47A1 1 0 0 1 17 20Zm0-11.12-3-4.47A1 1 0 0 1 13.17 4H10.83a1 1 0 0 1-.83.41l-3 4.47V4h10Z"/></svg>
+                    <h2 class="card-title">时间沙漏</h2>
+                </header>
+                <div class="card-content">
+                    <button class="adventure-button auto-button" onclick="getCurrentTime()">查看当前时刻</button>
+                    <div id="time-result" class="result-area" style="margin-top: 1rem;">时间的流动，在此刻凝结。</div>
+                </div>
+            </section>
+
+            <!-- 探险日志 (文件) -->
+            <section class="adventure-card file-card" id="adventure-log">
+                <header class="card-header">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 2H8.5A2.5 2.5 0 0 0 6 4.5V6H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Zm-1 18H5V8h1V6.5A2.5 2.5 0 0 1 8.5 4H18ZM8 6h8v2H8Zm10 4H8v2h10Zm-3 4H8v2h7Z"/></svg>
+                    <h2 class="card-title">探险日志</h2>
+                </header>
+                <div class="card-content">
+                    <button class="adventure-button auto-button" onclick="showFileContent()">翻阅指定日志</button>
+                    <div id="file-result" class="result-area" style="margin-top: 1rem;">打开日志，回顾过往的冒险。</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // AI Agent API (unchanged)
+        window.aiAgentAPI = {
+            baseURL: 'http://localhost:8080',
+            async callAPI(endpoint, input, expectedType = null) {
+                try {
+                    const requestId = `Req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    console.log(`[${requestId}] API Request: ${endpoint} with input:`, input);
+                    const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input: input, thread_id: 'dashboard_' + Date.now() })
+                    });
+                    const data = await response.json();
+                    if (!data.success) {
+                        console.error(`[${requestId}] API Error:`, data.error);
+                        return `查询失败: ${data.error || '未知错误'}`;
+                    }
+                    console.log(`[${requestId}] API Success`);
+                    return data.response;
+                } catch (error) {
+                    console.error(`API Network Error:`, error);
+                    return `网络错误: ${error.message}`;
+                }
+            },
+            weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city, 'weather'),
+            news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic, 'news'),
+            extract: (url) => window.aiAgentAPI.callAPI('extract', url, 'extract'),
+            research: (topic) => window.aiAgentAPI.callAPI('research', topic, 'research'),
+            calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr, 'calculate'),
+            datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query, 'datetime'),
+            file: (operation) => window.aiAgentAPI.callAPI('file', operation, 'file')
+        };
+
+        // Show loading state with new animation
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="loading-indicator">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div>正在探寻中...</div>
+                </div>`;
+        }
+
+        // Map element IDs to expected data types
+        const AREA_TYPE_MAP = {
+            'weather-result': 'weather', 'news-result': 'news', 'browser-result': 'extract',
+            'research-result': 'research', 'calc-result': 'calculate', 'time-result': 'datetime',
+            'file-result': 'file'
+        };
+
+        // Parse and display results
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            const expectedType = AREA_TYPE_MAP[elementId];
+            try {
+                const jsonStart = result.indexOf('{');
+                const jsonEnd = result.lastIndexOf('}');
+                const jsonData = (jsonStart !== -1 && jsonEnd > jsonStart) ? result.substring(jsonStart, jsonEnd + 1) : result;
+                const data = JSON.parse(jsonData);
+
+                if (data.type && expectedType && data.type !== expectedType) {
+                    console.warn(`Type mismatch! Expected: ${expectedType}, Got: ${data.type}`);
+                    element.innerHTML = `<div class="result-content" style="color: var(--accent-red);"><strong>数据类型错误!</strong><br>期望: ${expectedType}, 收到: ${data.type}</div>`;
+                    return;
+                }
+                element.innerHTML = formatJSONData(data);
+            } catch (e) {
+                element.innerHTML = `<div class="result-content"><pre class="code-block">${result}</pre></div>`;
+            }
+        }
+
+        // Format JSON data into themed HTML
+        function formatJSONData(data) {
+            if (!data || !data.type) return `<div class="result-content"><pre class="code-block">${JSON.stringify(data, null, 2)}</pre></div>`;
+            let html = '<div class="result-content">';
+            switch (data.type) {
+                case 'weather':
+                    html += `<h4>${data.city || '未知地点'} 天气勘测报告</h4>`;
+                    html += `<div class="big-value">${data.temperature?.current || 'N/A'}</div>`;
+                    html += `<div class="info-grid">
+                        <span class="label">状况:</span><span class="value">${data.condition || '未知'}</span>
+                        <span class="label">范围:</span><span class="value">${data.temperature?.low || 'N/A'} ~ ${data.temperature?.high || 'N/A'}</span>
+                        <span class="label">湿度:</span><span class="value">${data.humidity || 'N/A'}</span>
+                        <span class="label">风力:</span><span class="value">${data.wind || 'N/A'}</span>
+                    </div>`;
+                    if (data.suggestions?.length > 0) {
+                        html += `<h5>探险建议:</h5><ul>${data.suggestions.map(s => `<li>${s}</li>`).join('')}</ul>`;
+                    }
+                    break;
+                case 'news':
+                    html += `<h4>来自“${data.topic}”的情报</h4>`;
+                    html += `<p><strong>情报总览:</strong> ${data.summary}</p><hr style="margin:1rem 0; border:none; border-top:1px solid rgba(0,0,0,0.1);">`;
+                    html += data.articles.map(a => `
+                        <div class="article-item">
+                            <h5>${a.title}</h5>
+                            <p class="article-meta">来源: ${a.source} | 时间: ${a.time}</p>
+                            <p>${a.summary}</p>
+                        </div>`).join('');
+                    break;
+                case 'extract':
+                    html += `<h4>遗迹“${data.title}”探勘记录</h4>`;
+                    html += `<p><strong>坐标:</strong> <span style="word-break:break-all; font-size:0.9em;">${data.url}</span></p>`;
+                    html += `<p><strong>描述:</strong> ${data.description}</p>`;
+                    html += `<h5>主要发现:</h5><p>${data.mainContent}</p>`;
+                    if (data.keyFeatures?.length > 0) {
+                        html += `<h5>关键特征:</h5><ul>${data.keyFeatures.map(f => `<li>${f}</li>`).join('')}</ul>`;
+                    }
+                    break;
+                case 'research':
+                    html += `<h4>关于“${data.topic}”的研究报告</h4>`;
+                    html += `<p>${data.introduction}</p>`;
+                    if (data.keyFindings?.length > 0) {
+                        html += `<h5>核心发现:</h5><ul>${data.keyFindings.map(f => `<li>${f}</li>`).join('')}</ul>`;
+                    }
+                    html += `<h5>详细分析:</h5><p>${data.detailedAnalysis}</p>`;
+                    html += `<h5>结论:</h5><p>${data.conclusion}</p>`;
+                    break;
+                case 'calculate':
+                    html += `<h4>炼金计算结果</h4>`;
+                    html += `<h5>公式:</h5><div class="code-block">${data.expression}</div>`;
+                    html += `<h5>结果:</h5><div class="big-value">${data.result}</div>`;
+                    if (data.steps?.length > 0) {
+                        html += `<h5>推演步骤:</h5><ol>${data.steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
+                    }
+                    break;
+                case 'datetime':
+                    html += `<h4>时间记录</h4>`;
+                    html += `<div class="big-value">${data.currentTime}</div>`;
+                    html += `<div class="info-grid">
+                        <span class="label">日期:</span><span class="value">${data.date}</span>
+                        <span class="label">星期:</span><span class="value">${data.weekday}</span>
+                        <span class="label">时区:</span><span class="value">${data.timezone}</span>
+                        <span class="label">ISO格式:</span><span class="value" style="font-family:monospace;">${data.formats.iso}</span>
+                    </div>`;
+                    break;
+                case 'file':
+                    html += `<h4>日志“${data.path.split('/').pop()}”</h4>`;
+                    html += `<p><strong>操作:</strong> ${data.operation}</p>`;
+                    html += `<h5>日志内容:</h5><pre class="code-block">${data.content}</pre>`;
+                    html += `<p><strong>备注:</strong> ${data.details}</p>`;
+                    break;
+                default:
+                    html += `<pre class="code-block">${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            return html + '</div>';
+        }
+
+        // --- Function Triggers ---
+        async function handleRequest(button, resultId, apiCall) {
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '处理中...';
+            showLoading(resultId);
+            try {
+                const result = await apiCall();
+                showResult(resultId, result);
+            } catch (error) {
+                showResult(resultId, `操作失败: ${error.message}`);
+            }
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+
+        function getWeatherInfo() { handleRequest(event.target, 'weather-result', () => window.aiAgentAPI.weather('北京')); }
+        function getNewsInfo() { handleRequest(event.target, 'news-result', () => window.aiAgentAPI.news('本日新闻')); }
+        function getCurrentTime() { handleRequest(event.target, 'time-result', () => window.aiAgentAPI.datetime('current')); }
+        function showFileContent() {
+            const path = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
+            handleRequest(event.target, 'file-result', () => window.aiAgentAPI.file(`read:${path}`));
+        }
+        function extractContent() {
+            const input = document.getElementById('url-input');
+            if (!input.value.trim()) { showResult('browser-result', '请输入遗迹坐标 (URL)'); return; }
+            handleRequest(input.nextElementSibling, 'browser-result', () => window.aiAgentAPI.extract(input.value.trim()));
+        }
+        function doResearch() {
+            const input = document.getElementById('research-input');
+            if (!input.value.trim()) { showResult('research-result', '请输入研究课题'); return; }
+            handleRequest(input.nextElementSibling, 'research-result', () => window.aiAgentAPI.research(input.value.trim()));
+        }
+        function doCalculate() {
+            const input = document.getElementById('calc-input');
+            if (!input.value.trim()) { showResult('calc-result', '请输入炼金公式'); return; }
+            handleRequest(input.nextElementSibling, 'calc-result', () => window.aiAgentAPI.calculate(input.value.trim()));
+        }
+
+        // Keypress handlers
+        function handleUrlKeyPress(event) { if (event.key === 'Enter') extractContent(); }
+        function handleResearchKeyPress(event) { if (event.key === 'Enter') doResearch(); }
+        function handleCalcKeyPress(event) { if (event.key === 'Enter') doCalculate(); }
+
+        // Auto-load on page ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('森林大冒险仪表盘已加载，准备开始探索！');
+        });
+    </script>
+
+
+<script>
+// AI网页设计师 - 高级功能集成
+// 检查是否已经存在aiAgentAPI，如果不存在才创建
+if (!window.aiAgentAPI) {
+    window.aiAgentAPI = {
+        baseURL: 'http://localhost:8080',
+        
+        // 通用API调用函数
+        async callAPI(endpoint, input) {
+            try {
+                const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        input: input, 
+                        thread_id: 'ai_webpage_' + Date.now() 
+                    })
+                });
+                const data = await response.json();
+                return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+            } catch (error) {
+                return '网络错误: ' + error.message;
+            }
+        },
+        
+        // 各种功能的便捷方法
+        weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+        news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+        extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+        research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+        calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+        datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+        file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+        system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+    };
+    console.log('🔧 创建了简化版 aiAgentAPI');
+} else {
+    console.log('✅ 检测到已存在完整版 aiAgentAPI，跳过重复创建');
+}
+
+// 智能结果显示函数 - 尝试使用现有的JSON处理逻辑
+function showSmartResult(element, result) {
+    // 检查是否存在完整的JSON处理函数
+    if (typeof window.parseAndShowResult === 'function') {
+        // 为element创建临时ID（如果没有）
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('🎯 使用完整版JSON处理逻辑显示结果');
+        window.parseAndShowResult(element.id, result);
+    } else if (typeof window.showResult === 'function') {
+        // 使用showResult函数
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('📋 使用showResult函数显示结果');
+        window.showResult(element.id, result);
+    } else {
+        // 回退到简单显示
+        console.log('📝 使用简单文本显示结果');
+        element.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+    }
+}
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        
+        // 为输入框阻止事件冒泡，这样点击输入框不会触发AI请求
+        const inputs = element.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.style.cursor = 'text';
+            input.addEventListener('click', function(event) {
+                event.stopPropagation(); // 阻止事件冒泡
+                console.log('📝 输入框可正常编辑');
+            });
+        });
+        
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body, .result-container') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div class="loading">正在处理中...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    const cityInput = this.querySelector('input[type="text"]');
+                    const city = cityInput ? cityInput.value.trim() || '北京' : '北京';
+                    result = await window.aiAgentAPI.weather(city);
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    const topicInput = this.querySelector('input[type="text"]');
+                    const topic = topicInput ? topicInput.value.trim() || '科技新闻' : '科技新闻';
+                    result = await window.aiAgentAPI.news(topic);
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    const urlInput = this.querySelector('input[type="text"], input[type="url"]');
+                    if (urlInput && urlInput.value.trim()) {
+                        result = await window.aiAgentAPI.extract(urlInput.value.trim());
+                    } else {
+                        result = '请在输入框中输入URL，然后点击卡片空白区域触发提取\n示例: https://www.example.com';
+                    }
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    const researchInput = this.querySelector('input[type="text"], textarea');
+                    const topic = researchInput ? researchInput.value.trim() || '人工智能发展趋势' : '人工智能发展趋势';
+                    result = await window.aiAgentAPI.research(topic);
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    const calcInput = this.querySelector('input[type="text"]');
+                    const expr = calcInput ? calcInput.value.trim() || 'sqrt(16) + log(10)' : 'sqrt(16) + log(10)';
+                    result = await window.aiAgentAPI.calculate(expr);
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    const fileInput = this.querySelector('input[type="text"]');
+                    const operation = fileInput ? fileInput.value.trim() || 'list:.' : 'list:.';
+                    result = await window.aiAgentAPI.file(operation);
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n输入框可正常编辑，点击卡片其他区域触发AI请求';
+                }
+                
+                // 使用智能结果显示
+                showSmartResult(loadingElement, result);
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+    console.log('💡 提示：输入框可正常编辑，点击卡片其他区域触发AI请求');
+});
+</script>
+</body>
+</html>

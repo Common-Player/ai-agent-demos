@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -33,6 +33,55 @@
             color: white;
             padding: 40px 30px;
             text-align: center;
+            position: relative;
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .user-info .avatar {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .auth-links a, .logout-btn {
+            color: white;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .auth-links a:hover, .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
         }
 
         .header h1 {
@@ -49,7 +98,146 @@
         }
 
         .main-content {
+            display: flex;
+            gap: 30px;
             padding: 40px 30px;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .right-panel {
+            width: 400px;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 25px;
+            border: 2px solid #e2e8f0;
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .history-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .history-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .history-tab {
+            flex: 1;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .history-tab.active {
+            background: white;
+            color: #374151;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.1);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .history-item-type {
+            background: #ddd6fe;
+            color: #5b21b6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .history-item-time {
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+
+        .history-item-prompt {
+            color: #374151;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            font-weight: 500;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-item-response {
+            color: #64748b;
+            font-size: 0.75rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .login-prompt {
+            text-align: center;
+            color: #64748b;
+            padding: 40px 20px;
+        }
+
+        .login-prompt a {
+            color: #f59e0b;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-prompt a:hover {
+            text-decoration: underline;
         }
 
         .feature-highlight {
@@ -213,6 +401,17 @@
             box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
         }
 
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .right-panel {
+                width: 100%;
+                max-height: 400px;
+            }
+        }
+
         @media (max-width: 600px) {
             .header h1 {
                 font-size: 2.2rem;
@@ -229,46 +428,110 @@
             .header {
                 padding: 30px 20px;
             }
+
+            .user-menu {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .history-tabs {
+                flex-direction: column;
+                gap: 2px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤖 AI 网页设计师</h1>
+            <div class="user-menu">
+                {% if user %}
+                    <div class="user-info">
+                        <div class="avatar">{{ user.username[0].upper() }}</div>
+                        <span>{{ user.username }}</span>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">登出</button>
+                {% else %}
+                    <div class="auth-links">
+                        <a href="/auth">登录 / 注册</a>
+                    </div>
+                {% endif %}
+            </div>
+            <h1>AI 仪表盘设计师</h1>
             <p>基于 LangGraph + Gemini 2.5 Pro 的智能网页设计系统<br>
             深度理解需求，重新设计整个网页结构和视觉效果</p>
         </div>
 
         <div class="main-content">
-            <!-- 功能亮点 -->
-            <div class="feature-highlight">
-                <h2>✨ AI 深度设计能力</h2>
-                <p>不同于简单的样式修改，AI设计师可以根据您的详细需求，重新构思整个网页的布局、色彩、动画效果和交互体验，创造独特的视觉设计。</p>
-            </div>
-
-            <!-- AI设计师区域 -->
-            <div class="design-section">
-                <div class="input-group">
-                    <label for="designRequest">🎨 详细描述您的网页设计需求</label>
-                    <textarea id="designRequest" placeholder="例如：创建一个未来感十足的深空主题仪表盘，要有粒子动画背景，卡片采用悬浮玻璃效果，配色以深蓝和紫色为主，整体风格要科技感和神秘感并存..."></textarea>
+            <!-- 左侧面板 -->
+            <div class="left-panel">
+                <!-- 功能亮点 -->
+                <div class="feature-highlight">
+                    <h2>✨ AI 深度设计能力</h2>
+                    <p>不同于简单的样式修改，AI设计师可以根据您的详细需求，重新构思整个网页的布局、色彩、动画效果和交互体验，创造独特的视觉设计。</p>
                 </div>
-                <button class="submit-btn" onclick="submitDesignRequest()">🚀 开始 AI 设计</button>
+
+                <!-- AI设计师区域 -->
+                <div class="design-section">
+                    <div class="input-group">
+                        <label for="designRequest">🎨 随意描述您的网页风格</label>
+                        <textarea id="designRequest" placeholder="例如：动物世界；雪山；森林"></textarea>
+                    </div>
+                    <button class="submit-btn" onclick="submitDesignRequest()">🚀 开始 AI 设计</button>
+                </div>
+
+                <!-- 结果显示区域 -->
+                <div class="result-section" id="resultSection">
+                    <div class="result-content" id="resultContent"></div>
+                </div>
             </div>
 
-            <!-- 功能演示链接 -->
-            <div class="demo-link">
-                <a href="demo.html" target="_blank">📊 查看完整功能演示</a>
-            </div>
-
-            <!-- 结果显示区域 -->
-            <div class="result-section" id="resultSection">
-                <div class="result-content" id="resultContent"></div>
+            <!-- 右侧历史记录面板 -->
+            <div class="right-panel">
+                {% if user %}
+                    <div class="history-header">
+                        <h3>📚 历史记录</h3>
+                    </div>
+                    
+                    <div class="history-tabs">
+                        <button class="history-tab active" onclick="switchHistoryTab('prompts')">提示词</button>
+                        <button class="history-tab" onclick="switchHistoryTab('webpages')">网页</button>
+                        <button class="history-tab" onclick="switchHistoryTab('stats')">统计</button>
+                    </div>
+                    
+                    <div id="history-prompts" class="history-list">
+                        <div style="text-align: center; color: #94a3b8; padding: 20px;">
+                            <div class="spinner" style="margin: 0 auto 15px;"></div>
+                            <p>加载历史记录中...</p>
+                        </div>
+                    </div>
+                    <div id="history-webpages" class="history-list" style="display: none;">
+                        <div style="text-align: center; color: #94a3b8; padding: 20px;">
+                            <div class="spinner" style="margin: 0 auto 15px;"></div>
+                            <p>加载网页记录中...</p>
+                        </div>
+                    </div>
+                    <div id="history-stats" class="history-list" style="display: none;">
+                        <div style="text-align: center; color: #94a3b8; padding: 20px;">
+                            <div class="spinner" style="margin: 0 auto 15px;"></div>
+                            <p>加载统计信息中...</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="login-prompt">
+                        <h3>📚 查看历史记录</h3>
+                        <p style="margin: 15px 0;">登录后可以查看您的设计历史和AI对话记录</p>
+                        <a href="/auth">点击登录或注册 →</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
     <script>
+        let currentHistoryTab = 'prompts';
+        
         async function submitDesignRequest() {
             const designRequest = document.getElementById('designRequest').value.trim();
             
@@ -295,6 +558,12 @@
                 
                 if (data.success) {
                     showResult(data.response, 'success');
+                    // 清空输入框
+                    document.getElementById('designRequest').value = '';
+                    // 刷新历史记录
+                    {% if user %}
+                    setTimeout(() => refreshHistory(), 1000);
+                    {% endif %}
                 } else {
                     showResult('错误: ' + data.error, 'error');
                 }
@@ -326,6 +595,186 @@
             // 滚动到结果区域
             resultSection.scrollIntoView({ behavior: 'smooth' });
         }
+
+        // 用户认证相关函数
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    alert('登出失败: ' + result.message);
+                }
+            } catch (error) {
+                alert('登出失败: ' + error.message);
+            }
+        }
+
+        {% if user %}
+        // 历史记录相关函数
+        function switchHistoryTab(tab) {
+            // 更新标签状态
+            document.querySelectorAll('.history-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 隐藏所有内容
+            document.querySelectorAll('[id^="history-"]').forEach(div => {
+                div.style.display = 'none';
+            });
+            
+            // 显示当前标签内容
+            document.getElementById('history-' + tab).style.display = 'block';
+            currentHistoryTab = tab;
+            
+            // 加载数据
+            loadHistory(tab);
+        }
+
+        async function loadHistory(type) {
+            const container = document.getElementById('history-' + type);
+            
+            // 显示加载状态
+            container.innerHTML = `
+                <div style="text-align: center; color: #94a3b8; padding: 20px;">
+                    <div class="spinner" style="margin: 0 auto 15px;"></div>
+                    <p>加载${type === 'prompts' ? '提示词记录' : type === 'webpages' ? '网页记录' : '统计信息'}中...</p>
+                </div>
+            `;
+
+            try {
+                let endpoint = '/api/history/prompts';
+                if (type === 'webpages') {
+                    endpoint = '/api/history/webpages';
+                } else if (type === 'stats') {
+                    endpoint = '/api/history/stats';
+                }
+
+                const response = await fetch(endpoint);
+                const result = await response.json();
+
+                if (result.success) {
+                    if (type === 'stats') {
+                        displayStats(result.stats);
+                    } else {
+                        displayHistory(result.history, type);
+                    }
+                } else {
+                    container.innerHTML = 
+                        '<p style="color: #dc2626; text-align: center; padding: 20px;">加载失败: ' + result.message + '</p>';
+                }
+            } catch (error) {
+                container.innerHTML = 
+                    '<p style="color: #dc2626; text-align: center; padding: 20px;">加载失败: ' + error.message + '</p>';
+            }
+        }
+
+        function displayHistory(history, type) {
+            const container = document.getElementById('history-' + type);
+            
+            if (!history || history.length === 0) {
+                container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 20px;">暂无记录</p>';
+                return;
+            }
+
+            const html = history.map(item => {
+                const date = new Date(item.created_at).toLocaleString('zh-CN');
+                
+                if (type === 'webpages') {
+                    return `
+                        <div class="history-item" onclick="fillPrompt('${item.prompt.replace(/'/g, "\\'")}')">
+                            <div class="history-item-header">
+                                <span class="history-item-type">${item.design_type}</span>
+                                <span class="history-item-time">${date}</span>
+                            </div>
+                            <div class="history-item-prompt">${item.prompt}</div>
+                            <div class="history-item-response">
+                                生成文件: ${item.filename || '未生成'} 
+                                ${item.filename ? `<a href="/generated/${item.filename}" target="_blank" style="color: #3b82f6; text-decoration: none;" onclick="event.stopPropagation();">查看网页 →</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="history-item" onclick="fillPrompt('${item.prompt.replace(/'/g, "\\'")}')">
+                            <div class="history-item-header">
+                                <span class="history-item-type">${item.prompt_type}</span>
+                                <span class="history-item-time">${date}</span>
+                            </div>
+                            <div class="history-item-prompt">${item.prompt}</div>
+                            <div class="history-item-response">${item.response.substring(0, 100)}${item.response.length > 100 ? '...' : ''}</div>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function displayStats(stats) {
+            const container = document.getElementById('history-stats');
+            
+            const html = `
+                <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+                        <h4 style="color: #374151; margin-bottom: 8px; font-size: 0.9rem;">总提示词数</h4>
+                        <p style="font-size: 1.5rem; font-weight: bold; color: #3b82f6; margin: 0;">${stats.total_prompts}</p>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+                        <h4 style="color: #374151; margin-bottom: 8px; font-size: 0.9rem;">生成网页数</h4>
+                        <p style="font-size: 1.5rem; font-weight: bold; color: #10b981; margin: 0;">${stats.total_webpages}</p>
+                    </div>
+                </div>
+                
+                ${Object.keys(stats.prompt_type_breakdown).length > 0 ? `
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #e2e8f0;">
+                    <h4 style="color: #374151; margin-bottom: 10px; font-size: 0.9rem;">提示词类型</h4>
+                    ${Object.entries(stats.prompt_type_breakdown).map(([type, count]) => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem;">
+                            <span style="color: #64748b;">${type}</span>
+                            <span style="font-weight: 600; color: #374151;">${count}</span>
+                        </div>
+                    `).join('')}
+                </div>` : ''}
+                
+                ${Object.keys(stats.webpage_type_breakdown).length > 0 ? `
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #e2e8f0;">
+                    <h4 style="color: #374151; margin-bottom: 10px; font-size: 0.9rem;">网页设计类型</h4>
+                    ${Object.entries(stats.webpage_type_breakdown).map(([type, count]) => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem;">
+                            <span style="color: #64748b;">${type}</span>
+                            <span style="font-weight: 600; color: #374151;">${count}</span>
+                        </div>
+                    `).join('')}
+                </div>` : ''}
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function fillPrompt(prompt) {
+            document.getElementById('designRequest').value = prompt;
+            document.getElementById('designRequest').focus();
+        }
+
+        async function refreshHistory() {
+            await loadHistory(currentHistoryTab);
+        }
+
+        // 页面加载时加载历史记录
+        window.addEventListener('load', function() {
+            loadHistory('prompts');
+        });
+        {% endif %}
 
         // 支持 Ctrl+Enter 快捷键提交
         document.getElementById('designRequest').addEventListener('keydown', function(e) {

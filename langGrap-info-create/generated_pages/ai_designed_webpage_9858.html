@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A.D.A.M. - Advanced Data & Analysis Matrix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #02040a;
+            --primary-glow: #00e1ff;
+            --secondary-glow: #b967ff;
+            --text-color: #cdd5e0;
+            --text-muted: #6c7a8e;
+            --border-color: rgba(0, 225, 255, 0.2);
+            --border-hover: rgba(0, 225, 255, 0.8);
+            --panel-bg: rgba(10, 23, 46, 0.5);
+            --panel-bg-blur: rgba(10, 23, 46, 0.2);
+            --font-primary: 'Orbitron', sans-serif;
+            --font-secondary: 'Roboto Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-glow) var(--bg-color);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--primary-glow);
+            border-radius: 6px;
+            border: 1px solid var(--bg-color);
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.3;
+            animation: bg-pan 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes bg-pan {
+            from { background-position: 0 0; }
+            to { background-position: 40px 40px; }
+        }
+
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+        }
+
+        .dashboard-header h1 {
+            font-family: var(--font-primary);
+            font-size: 1.8rem;
+            color: var(--primary-glow);
+            text-shadow: 0 0 10px var(--primary-glow);
+            letter-spacing: 2px;
+        }
+
+        .system-status {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .system-status span {
+            color: #22c55e; /* Green for online status */
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: minmax(200px, auto);
+            gap: 20px;
+        }
+
+        .module-card {
+            background: var(--panel-bg-blur);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            position: relative;
+            padding: 20px;
+            transition: all 0.3s ease;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+            display: flex;
+            flex-direction: column;
+            animation: module-boot 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .module-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 20px rgba(0, 225, 255, 0.2);
+        }
+
+        .module-card::before, .module-card::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-style: solid;
+            border-color: var(--primary-glow);
+            transition: all 0.3s ease;
+        }
+        .module-card::before {
+            top: -1px; left: -1px;
+            border-width: 2px 0 0 2px;
+        }
+        .module-card::after {
+            bottom: -1px; right: -1px;
+            border-width: 0 2px 2px 0;
+        }
+
+        /* Grid layout for modules */
+        .weather-card { grid-column: span 4; grid-row: span 1; }
+        .news-card { grid-column: span 8; grid-row: span 2; }
+        .browser-card { grid-column: span 6; grid-row: span 2; }
+        .research-card { grid-column: span 6; grid-row: span 2; }
+        .calculator-card { grid-column: span 4; grid-row: span 1; }
+        .time-card { grid-column: span 4; grid-row: span 1; }
+        .file-card { grid-column: span 8; grid-row: span 1; }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .module-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 15px;
+            color: var(--primary-glow);
+        }
+
+        .module-title {
+            font-family: var(--font-primary);
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--text-color);
+            flex-grow: 1;
+        }
+
+        .module-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .result-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            font-family: var(--font-secondary);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .card-input:focus {
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 10px rgba(0, 225, 255, 0.3);
+        }
+
+        .submit-btn, .auto-request-btn {
+            padding: 8px 15px;
+            background: transparent;
+            color: var(--primary-glow);
+            border: 1px solid var(--primary-glow);
+            cursor: pointer;
+            font-family: var(--font-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .submit-btn:hover, .auto-request-btn:hover {
+            background: var(--primary-glow);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+        .submit-btn:disabled, .auto-request-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            color: var(--text-muted);
+            border-color: var(--text-muted);
+            background: transparent;
+            box-shadow: none;
+        }
+        .auto-request-btn { width: 100%; }
+
+        .default-text {
+            color: var(--text-muted);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 15px;
+            color: var(--primary-glow);
+            font-family: var(--font-primary);
+            font-size: 1rem;
+        }
+        .loader-line {
+            width: 80%;
+            height: 2px;
+            background: var(--primary-glow);
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-line::before {
+            content: '';
+            position: absolute;
+            left: -50%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, var(--bg-color), transparent);
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { left: -50%; }
+            100% { left: 100%; }
+        }
+
+        /* Custom Data Display Styles */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .data-item {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-left: 2px solid var(--secondary-glow);
+        }
+        .data-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        .data-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        .data-value.large {
+            font-size: 2rem;
+            font-family: var(--font-primary);
+            color: var(--primary-glow);
+        }
+
+        .data-list h4, .data-section h4 {
+            font-family: var(--font-primary);
+            color: var(--secondary-glow);
+            margin: 15px 0 10px;
+            font-size: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+        .data-list ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .data-list li {
+            padding: 5px 0 5px 15px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .data-list li::before {
+            content: '>>';
+            position: absolute;
+            left: 0;
+            color: var(--primary-glow);
+            font-size: 0.8rem;
+        }
+
+        .article {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s ease;
+        }
+        .article:hover {
+            background: rgba(0, 225, 255, 0.05);
+        }
+        .article h5 {
+            color: var(--primary-glow);
+            margin-bottom: 5px;
+        }
+        .article-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .terminal-output {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .terminal-output .prompt { color: var(--primary-glow); }
+        .terminal-output .result { color: #22c55e; }
+
+        .file-content pre {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            max-height: 150px;
+            overflow: auto;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes module-boot {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .module-card:nth-child(1) { animation-delay: 0.1s; }
+        .module-card:nth-child(2) { animation-delay: 0.2s; }
+        .module-card:nth-child(3) { animation-delay: 0.3s; }
+        .module-card:nth-child(4) { animation-delay: 0.4s; }
+        .module-card:nth-child(5) { animation-delay: 0.5s; }
+        .module-card:nth-child(6) { animation-delay: 0.6s; }
+        .module-card:nth-child(7) { animation-delay: 0.7s; }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .weather-card { grid-column: span 6; }
+            .news-card { grid-column: span 12; }
+            .browser-card { grid-column: span 6; }
+            .research-card { grid-column: span 6; }
+            .calculator-card { grid-column: span 6; }
+            .time-card { grid-column: span 6; }
+            .file-card { grid-column: span 12; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .dashboard-header h1 { font-size: 1.5rem; }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .module-card {
+                grid-column: span 1 !important;
+                grid-row: span 1 !important;
+            }
+            .input-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>A.D.A.M.</h1>
+            <div class="system-status">STATUS: <span>ONLINE</span> // ALL MODULES NOMINAL</div>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Weather Module -->
+            <div class="module-card weather-card">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+                    <h3 class="module-title">Weather Intel</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="getWeatherInfo()">Query Atmospheric Data</button>
+                    <div id="weather-result" class="result-container default-text">Awaiting query...</div>
+                </div>
+            </div>
+
+            <!-- News Module -->
+            <div class="module-card news-card">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                    <h3 class="module-title">Global News Feed</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="getNewsInfo()">Fetch Latest Briefings</button>
+                    <div id="news-result" class="result-container default-text">Awaiting query...</div>
+                </div>
+            </div>
+
+            <!-- Web Browser Module -->
+            <div class="module-card browser-card">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    <h3 class="module-title">Web Content Extractor</h3>
+                </div>
+                <div class="module-content">
+                    <div class="input-container">
+                        <input type="url" id="url-input" class="card-input" placeholder="Target URL..." onkeypress="handleUrlKeyPress(event)">
+                        <button class="submit-btn" onclick="extractContent()">Extract</button>
+                    </div>
+                    <div id="browser-result" class="result-container default-text">Awaiting target...</div>
+                </div>
+            </div>
+
+            <!-- Research Module -->
+            <div class="module-card research-card">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    <h3 class="module-title">Research & Analysis</h3>
+                </div>
+                <div class="module-content">
+                    <div class="input-container">
+                        <input type="text" id="research-input" class="card-input" placeholder="Research Topic..." onkeypress="handleResearchKeyPress(event)">
+                        <button class="submit-btn" onclick="doResearch()">Analyze</button>
+                    </div>
+                    <div id="research-result" class="result-container default-text">Awaiting topic...</div>
+                </div>
+            </div>
+
+            <!-- Calculator Module -->
+            <div class="module-card calculator-card">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="10" x2="16" y2="18"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="12" y1="10" x2="12" y2="18"></line><line x1="8" y1="18" x2="12" y2="18"></line></svg>
+                    <h3 class="module-title">Quantum Calculator</h3>
+                </div>
+                <div class="module-content">
+                    <div class="input-container">
+                        <input type="text" id="calc-input" class="card-input" placeholder="Expression..." onkeypress="handleCalcKeyPress(event)">
+                        <button class="submit-btn" onclick="doCalculate()">Compute</button>
+                    </div>
+                    <div id="calc-result" class="result-container default-text">Awaiting expression...</div>
+                </div>
+            </div>
+
+            <!-- Time Module -->
+            <div class="module-card time-card">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <h3 class="module-title">Chronometer</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="getCurrentTime()">Sync Time Data</button>
+                    <div id="time-result" class="result-container default-text">Awaiting sync...</div>
+                </div>
+            </div>
+
+            <!-- File Module -->
+            <div class="module-card file-card">
+                <div class="module-header">
+                    <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    <h3 class="module-title">File System Interface</h3>
+                </div>
+                <div class="module-content">
+                    <button class="auto-request-btn" onclick="showFileContent()">Access Directory</button>
+                    <div id="file-result" class="result-container default-text">Awaiting command...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // AI Agent API Configuration (unchanged)
+        window.aiAgentAPI = {
+            baseURL: 'http://localhost:8080',
+            async callAPI(endpoint, input, expectedType = null) {
+                try {
+                    const requestId = `Req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    console.log(`🌐 [${requestId}] API请求: ${endpoint} with input: ${input}`);
+                    const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input: input, thread_id: 'dashboard_' + Date.now() })
+                    });
+                    const data = await response.json();
+                    console.log(`📥 [${requestId}] API响应:`, data);
+                    if (!data.success) {
+                        console.error(`❌ [${requestId}] API失败:`, data.error);
+                        return '查询失败: ' + (data.error || '未知错误');
+                    }
+                    const result = data.response;
+                    console.log(`✅ [${requestId}] API成功返回`);
+                    return result;
+                } catch (error) {
+                    console.error(`❌ API网络错误:`, error);
+                    return '网络错误: ' + error.message;
+                }
+            },
+            weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city, 'weather'),
+            news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic, 'news'),
+            extract: (url) => window.aiAgentAPI.callAPI('extract', url, 'extract'),
+            research: (topic) => window.aiAgentAPI.callAPI('research', topic, 'research'),
+            calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr, 'calculate'),
+            datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query, 'datetime'),
+            file: (operation) => window.aiAgentAPI.callAPI('file', operation, 'file')
+        };
+
+        // Show loading state
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="loading">
+                    <div class="loader-line"></div>
+                    PROCESSING...
+                </div>`;
+        }
+
+        // Parse and display results
+        function parseAndShowResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            try {
+                const jsonStart = result.indexOf('{');
+                const jsonEnd = result.lastIndexOf('}');
+                if (jsonStart === -1 || jsonEnd === -1) throw new Error("Not a JSON string");
+                const jsonData = result.substring(jsonStart, jsonEnd + 1);
+                const data = JSON.parse(jsonData);
+                const formattedHTML = formatJSONData(data);
+                element.innerHTML = formattedHTML;
+            } catch (e) {
+                element.innerHTML = `<div class="terminal-output"><span class="prompt">[RAW_DATA]> </span>${result}</div>`;
+            }
+        }
+
+        // Format JSON data into new themed HTML
+        function formatJSONData(data) {
+            if (!data || !data.type) {
+                return `<div class="terminal-output"><span class="prompt">[ERROR]> </span>Invalid data structure received.</div>`;
+            }
+            switch (data.type) {
+                case 'weather': return formatWeatherData(data);
+                case 'news': return formatNewsData(data);
+                case 'extract': return formatExtractData(data);
+                case 'research': return formatResearchData(data);
+                case 'calculate': return formatCalculateData(data);
+                case 'datetime': return formatDateTimeData(data);
+                case 'file': return formatFileData(data);
+                default: return `<div class="terminal-output"><span class="prompt">[UNKNOWN_TYPE]> </span>${JSON.stringify(data, null, 2)}</div>`;
+            }
+        }
+
+        function formatWeatherData(data) {
+            return `
+                <div class="data-grid">
+                    <div class="data-item" style="grid-column: 1 / -1;">
+                        <span class="data-label">${data.city || 'Unknown Location'}</span>
+                        <span class="data-value large">${data.temperature?.current || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Condition</span>
+                        <span class="data-value">${data.condition || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Range</span>
+                        <span class="data-value">${data.temperature?.low || 'N/A'} ~ ${data.temperature?.high || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Humidity</span>
+                        <span class="data-value">${data.humidity || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Wind</span>
+                        <span class="data-value">${data.wind || 'N/A'}</span>
+                    </div>
+                </div>
+                ${data.suggestions?.length > 0 ? `
+                <div class="data-list">
+                    <h4>Tactical Suggestions</h4>
+                    <ul>${data.suggestions.map(s => `<li>${s}</li>`).join('')}</ul>
+                </div>` : ''}
+            `;
+        }
+
+        function formatNewsData(data) {
+            return `
+                <div class="data-section">
+                    <h4>[ ${data.topic} // Summary ]</h4>
+                    <p>${data.summary}</p>
+                </div>
+                <div class="data-section">
+                    <h4>[ Incoming Briefings ]</h4>
+                    ${data.articles.map(article => `
+                        <div class="article">
+                            <h5>${article.title}</h5>
+                            <p class="article-meta">Source: ${article.source} // ${article.time}</p>
+                            <p>${article.summary}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="data-list">
+                    <h4>Key Intel</h4>
+                    <ul>${data.keyPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+                </div>
+            `;
+        }
+
+        function formatExtractData(data) {
+            return `
+                <div class="data-section">
+                    <h4>[ Target: ${data.title} ]</h4>
+                    <p style="color: var(--text-muted); word-break: break-all;">${data.url}</p>
+                </div>
+                <div class="data-section">
+                    <h4>[ Main Content Synopsis ]</h4>
+                    <p>${data.mainContent}</p>
+                </div>
+                <div class="data-list">
+                    <h4>Key Features</h4>
+                    <ul>${data.keyFeatures.map(f => `<li>${f}</li>`).join('')}</ul>
+                </div>
+            `;
+        }
+
+        function formatResearchData(data) {
+            return `
+                <div class="data-section">
+                    <h4>[ Research Topic: ${data.topic} ]</h4>
+                    <p>${data.introduction}</p>
+                </div>
+                <div class="data-list">
+                    <h4>Key Findings</h4>
+                    <ul>${data.keyFindings.map(f => `<li>${f}</li>`).join('')}</ul>
+                </div>
+                <div class="data-list">
+                    <h4>Future Trends</h4>
+                    <ul>${data.trends.map(t => `<li>${t}</li>`).join('')}</ul>
+                </div>
+                <div class="data-section">
+                    <h4>[ Conclusion ]</h4>
+                    <p>${data.conclusion}</p>
+                </div>
+            `;
+        }
+
+        function formatCalculateData(data) {
+            return `
+                <div class="terminal-output">
+                    <p><span class="prompt">Input:> </span>${data.expression}</p>
+                    <p><span class="prompt">Result:> </span><span class="result">${data.result}</span></p>
+                    <br>
+                    <p><span class="prompt">Steps:></span></p>
+                    <ol style="padding-left: 20px;">
+                        ${data.steps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
+                </div>
+            `;
+        }
+
+        function formatDateTimeData(data) {
+            return `
+                <div class="data-grid">
+                    <div class="data-item" style="grid-column: 1 / -1;">
+                        <span class="data-label">Current Time</span>
+                        <span class="data-value large">${data.currentTime}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Date</span>
+                        <span class="data-value">${data.date}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Weekday</span>
+                        <span class="data-value">${data.weekday}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Timezone</span>
+                        <span class="data-value">${data.timezone}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Timestamp</span>
+                        <span class="data-value">${data.formats.timestamp}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatFileData(data) {
+            return `
+                <div class="data-section">
+                    <h4>[ File Operation Log ]</h4>
+                    <p><strong>Path:</strong> ${data.path}</p>
+                    <p><strong>Operation:</strong> ${data.operation}</p>
+                    <p><strong>Result:</strong> ${data.result}</p>
+                </div>
+                <div class="data-section">
+                    <h4>[ File Content ]</h4>
+                    <div class="file-content">
+                        <pre>${data.content || '[Empty or No Content]'}</pre>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Compatibility function
+        function showResult(elementId, result) {
+            parseAndShowResult(elementId, result);
+        }
+
+        // Generic async function handler
+        async function handleRequest(button, elementId, apiCall, loadingText, buttonText) {
+            button.disabled = true;
+            button.textContent = loadingText;
+            showLoading(elementId);
+            try {
+                const result = await apiCall();
+                showResult(elementId, result);
+            } catch (error) {
+                showResult(elementId, `Request failed: ${error.message}`);
+            }
+            button.disabled = false;
+            button.textContent = buttonText;
+        }
+
+        // Function triggers
+        function getWeatherInfo() { handleRequest(event.target, 'weather-result', () => window.aiAgentAPI.weather('北京'), 'Querying...', 'Query Atmospheric Data'); }
+        function getNewsInfo() { handleRequest(event.target, 'news-result', () => window.aiAgentAPI.news('本日新闻'), 'Fetching...', 'Fetch Latest Briefings'); }
+        function getCurrentTime() { handleRequest(event.target, 'time-result', () => window.aiAgentAPI.datetime('current'), 'Syncing...', 'Sync Time Data'); }
+        function showFileContent() {
+            const targetPath = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
+            handleRequest(event.target, 'file-result', () => window.aiAgentAPI.file(`read:${targetPath}`), 'Accessing...', 'Access Directory');
+        }
+        
+        async function extractContent() {
+            const urlInput = document.getElementById('url-input');
+            const url = urlInput.value.trim();
+            if (!url) { showResult('browser-result', 'Please provide a valid URL.'); return; }
+            const btn = event.target.tagName === 'BUTTON' ? event.target : urlInput.nextElementSibling;
+            await handleRequest(btn, 'browser-result', () => window.aiAgentAPI.extract(url), 'Extracting...', 'Extract');
+        }
+
+        async function doResearch() {
+            const researchInput = document.getElementById('research-input');
+            const topic = researchInput.value.trim();
+            if (!topic) { showResult('research-result', 'Please provide a research topic.'); return; }
+            const btn = event.target.tagName === 'BUTTON' ? event.target : researchInput.nextElementSibling;
+            await handleRequest(btn, 'research-result', () => window.aiAgentAPI.research(topic), 'Analyzing...', 'Analyze');
+        }
+
+        async function doCalculate() {
+            const calcInput = document.getElementById('calc-input');
+            const expression = calcInput.value.trim();
+            if (!expression) { showResult('calc-result', 'Please provide a mathematical expression.'); return; }
+            const btn = event.target.tagName === 'BUTTON' ? event.target : calcInput.nextElementSibling;
+            await handleRequest(btn, 'calc-result', () => window.aiAgentAPI.calculate(expression), 'Computing...', 'Compute');
+        }
+
+        // Keypress handlers
+        function handleUrlKeyPress(event) { if (event.key === 'Enter') extractContent(); }
+        function handleResearchKeyPress(event) { if (event.key === 'Enter') doResearch(); }
+        function handleCalcKeyPress(event) { if (event.key === 'Enter') doCalculate(); }
+
+        // Auto-load on page ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('A.D.A.M. Interface Initialized. Booting modules...');
+            setTimeout(() => {
+                autoLoadAllFunctions();
+            }, 500);
+        });
+
+        async function autoLoadAllFunctions() {
+            console.log('Executing auto-load sequence...');
+            document.getElementById('url-input').value = 'https://news.cctv.com/';
+            document.getElementById('research-input').value = 'agent前沿';
+            document.getElementById('calc-input').value = '1+9*20-2';
+
+            // Trigger button clicks to use the unified handler logic
+            document.querySelector('.weather-card .auto-request-btn').click();
+            document.querySelector('.news-card .auto-request-btn').click();
+            document.querySelector('.browser-card .submit-btn').click();
+            document.querySelector('.research-card .submit-btn').click();
+            document.querySelector('.calculator-card .submit-btn').click();
+            document.querySelector('.time-card .auto-request-btn').click();
+            document.querySelector('.file-card .auto-request-btn').click();
+        }
+    </script>
+
+<script>
+// AI网页设计师 - 高级功能集成
+// 检查是否已经存在aiAgentAPI，如果不存在才创建
+if (!window.aiAgentAPI) {
+    window.aiAgentAPI = {
+        baseURL: 'http://localhost:8080',
+        
+        // 通用API调用函数
+        async callAPI(endpoint, input) {
+            try {
+                const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        input: input, 
+                        thread_id: 'ai_webpage_' + Date.now() 
+                    })
+                });
+                const data = await response.json();
+                return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+            } catch (error) {
+                return '网络错误: ' + error.message;
+            }
+        },
+        
+        // 各种功能的便捷方法
+        weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+        news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+        extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+        research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+        calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+        datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+        file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+        system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+    };
+    console.log('🔧 创建了简化版 aiAgentAPI');
+} else {
+    console.log('✅ 检测到已存在完整版 aiAgentAPI，跳过重复创建');
+}
+
+// 智能结果显示函数 - 尝试使用现有的JSON处理逻辑
+function showSmartResult(element, result) {
+    // 检查是否存在完整的JSON处理函数
+    if (typeof window.parseAndShowResult === 'function') {
+        // 为element创建临时ID（如果没有）
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('🎯 使用完整版JSON处理逻辑显示结果');
+        window.parseAndShowResult(element.id, result);
+    } else if (typeof window.showResult === 'function') {
+        // 使用showResult函数
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('📋 使用showResult函数显示结果');
+        window.showResult(element.id, result);
+    } else {
+        // 回退到简单显示
+        console.log('📝 使用简单文本显示结果');
+        element.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+    }
+}
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        
+        // 为输入框阻止事件冒泡，这样点击输入框不会触发AI请求
+        const inputs = element.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.style.cursor = 'text';
+            input.addEventListener('click', function(event) {
+                event.stopPropagation(); // 阻止事件冒泡
+                console.log('📝 输入框可正常编辑');
+            });
+        });
+        
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body, .result-container') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div class="loading">正在处理中...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    const cityInput = this.querySelector('input[type="text"]');
+                    const city = cityInput ? cityInput.value.trim() || '北京' : '北京';
+                    result = await window.aiAgentAPI.weather(city);
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    const topicInput = this.querySelector('input[type="text"]');
+                    const topic = topicInput ? topicInput.value.trim() || '科技新闻' : '科技新闻';
+                    result = await window.aiAgentAPI.news(topic);
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    const urlInput = this.querySelector('input[type="text"], input[type="url"]');
+                    if (urlInput && urlInput.value.trim()) {
+                        result = await window.aiAgentAPI.extract(urlInput.value.trim());
+                    } else {
+                        result = '请在输入框中输入URL，然后点击卡片空白区域触发提取\n示例: https://www.example.com';
+                    }
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    const researchInput = this.querySelector('input[type="text"], textarea');
+                    const topic = researchInput ? researchInput.value.trim() || '人工智能发展趋势' : '人工智能发展趋势';
+                    result = await window.aiAgentAPI.research(topic);
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    const calcInput = this.querySelector('input[type="text"]');
+                    const expr = calcInput ? calcInput.value.trim() || 'sqrt(16) + log(10)' : 'sqrt(16) + log(10)';
+                    result = await window.aiAgentAPI.calculate(expr);
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    const fileInput = this.querySelector('input[type="text"]');
+                    const operation = fileInput ? fileInput.value.trim() || 'list:.' : 'list:.';
+                    result = await window.aiAgentAPI.file(operation);
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n输入框可正常编辑，点击卡片其他区域触发AI请求';
+                }
+                
+                // 使用智能结果显示
+                showSmartResult(loadingElement, result);
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+    console.log('💡 提示：输入框可正常编辑，点击卡片其他区域触发AI请求');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>滑雪大冒险 - 智能助理仪表板</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient-start: #6dd5ed;
+            --bg-gradient-end: #2193b0;
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(255, 255, 255, 0.8);
+            --text-dark: #1a2e3b;
+            --text-light: #5a7384;
+            --accent-color: #ff7e5f;
+            --accent-gradient: linear-gradient(45deg, #ff7e5f, #feb47b);
+            --shadow-color: rgba(33, 147, 176, 0.2);
+            --font-main: 'Noto Sans SC', sans-serif;
+            --font-heading: 'Poppins', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(160deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* --- 雪花背景 --- */
+        .snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .snow {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) translateX(0); }
+            100% { transform: translateY(110vh) translateX(15vw); }
+        }
+
+        /* --- 视差山脉背景 --- */
+        .parallax-bg {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            background-size: cover;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .mountain-back {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23cdeff7" fill-opacity="1" d="M0,224L48,208C96,192,192,160,288,165.3C384,171,480,213,576,208C672,203,768,149,864,149.3C960,149,1056,203,1152,224C1248,245,1344,235,1392,229.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            z-index: 1;
+        }
+
+        .mountain-front {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.8" d="M0,288L60,261.3C120,235,240,181,360,176C480,171,600,213,720,208C840,203,960,149,1080,133.3C1200,117,1320,139,1380,149.3L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path></svg>');
+            z-index: 2;
+        }
+
+        /* --- 主容器和头部 --- */
+        .resort-dashboard {
+            position: relative;
+            z-index: 10;
+            padding: 40px 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .resort-header {
+            text-align: center;
+            margin-bottom: 60px;
+            color: white;
+        }
+
+        .resort-header h1 {
+            font-family: var(--font-heading);
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+        }
+
+        .resort-header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            margin-top: 10px;
+        }
+
+        /* --- 卡片网格布局 --- */
+        .dashboard-slope {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 25px;
+        }
+
+        /* --- 卡片基础样式 --- */
+        .slope-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 35px var(--shadow-color);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            animation: slide-in 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .slope-card:hover {
+            transform: translateY(-10px) rotate(-1deg);
+            box-shadow: 0 20px 45px var(--shadow-color);
+        }
+
+        @keyframes slide-in {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 卡片入场动画延迟 */
+        .slope-card:nth-child(1) { animation-delay: 0.1s; }
+        .slope-card:nth-child(2) { animation-delay: 0.2s; }
+        .slope-card:nth-child(3) { animation-delay: 0.3s; }
+        .slope-card:nth-child(4) { animation-delay: 0.4s; }
+        .slope-card:nth-child(5) { animation-delay: 0.5s; }
+        .slope-card:nth-child(6) { animation-delay: 0.6s; }
+        .slope-card:nth-child(7) { animation-delay: 0.7s; }
+
+        /* --- 卡片布局调整 --- */
+        .card-weather { grid-column: span 5; }
+        .card-news { grid-column: span 7; }
+        .card-browser { grid-column: span 8; }
+        .card-time { grid-column: span 4; }
+        .card-research { grid-column: span 6; }
+        .card-calculator { grid-column: span 3; }
+        .card-file { grid-column: span 3; }
+
+        /* --- 卡片内部样式 --- */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            background: var(--accent-gradient);
+            border-radius: 16px;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(255, 126, 95, 0.4);
+        }
+        .card-icon svg { width: 24px; height: 24px; }
+
+        .card-title {
+            font-family: var(--font-heading);
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- 输入和按钮样式 --- */
+        .input-goggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-input {
+            flex-grow: 1;
+            padding: 12px 18px;
+            border: 1px solid #d0e0e8;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: var(--font-main);
+            background: #f8fcff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .card-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(255, 126, 95, 0.2);
+            background: white;
+        }
+
+        .ski-button {
+            padding: 12px 24px;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: var(--font-heading);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 126, 95, 0.3);
+            flex-shrink: 0;
+        }
+
+        .ski-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(255, 126, 95, 0.4);
+        }
+        
+        .ski-button:active:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 126, 95, 0.3);
+        }
+
+        .ski-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .auto-request-btn {
+            width: 100%;
+            margin-top: auto;
+        }
+
+        /* --- 结果展示区 --- */
+        .result-area {
+            margin-top: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .default-text {
+            flex-grow: 1;
+            display: grid;
+            place-items: center;
+            color: var(--text-light);
+            font-style: italic;
+            background: rgba(240, 248, 255, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-container {
+            background: #f8fcff;
+            border: 1px solid #e0eef7;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* 滚动条样式 */
+        .result-container::-webkit-scrollbar { width: 8px; }
+        .result-container::-webkit-scrollbar-track { background: #eef7ff; border-radius: 4px; }
+        .result-container::-webkit-scrollbar-thumb { background: #b0c4d4; border-radius: 4px; }
+        .result-container::-webkit-scrollbar-thumb:hover { background: #98b0c2; }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--accent-color);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        .loading::before {
+            content: '🏂';
+            font-size: 24px;
+            animation: ski-anim 1.5s cubic-bezier(0.65, 0.05, 0.36, 1) infinite;
+        }
+        @keyframes ski-anim {
+            0% { transform: translateX(-30px) rotate(-20deg); }
+            50% { transform: translateX(30px) rotate(10deg); }
+            100% { transform: translateX(-30px) rotate(-20deg); }
+        }
+
+        /* --- 结构化数据美化 --- */
+        .weather-display .temperature {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2193b0;
+            margin: 10px 0;
+        }
+        .current-time {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2193b0;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .article {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 5px solid var(--accent-color);
+        }
+        .article h4 { color: var(--text-dark); margin-bottom: 5px; }
+        .content-text {
+            background: #eef7ff;
+            border: 1px solid #d0e0e8;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* --- 响应式设计 --- */
+        @media (max-width: 1200px) {
+            .card-weather { grid-column: span 6; }
+            .card-news { grid-column: span 6; }
+            .card-browser { grid-column: span 12; }
+            .card-time { grid-column: span 5; }
+            .card-research { grid-column: span 7; }
+            .card-calculator { grid-column: span 6; }
+            .card-file { grid-column: span 6; }
+        }
+
+        @media (max-width: 768px) {
+            .resort-header h1 { font-size: 2.5rem; }
+            .resort-header p { font-size: 1.1rem; }
+            .dashboard-slope { grid-template-columns: 1fr; }
+            .slope-card { grid-column: span 1 !important; }
+            .parallax-bg { display: none; } /* 移动端禁用视差以提高性能 */
+            .input-goggle { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="snow-container"></div>
+
+    <div class="parallax-bg">
+        <div class="mountain mountain-back"></div>
+        <div class="mountain mountain-front"></div>
+    </div>
+
+    <main class="resort-dashboard">
+        <header class="resort-header">
+            <h1>滑雪大冒险</h1>
+            <p>您的全天候智能滑雪助理</p>
+        </header>
+
+        <div class="dashboard-slope">
+            <!-- 天气查询 -->
+            <div class="slope-card card-weather">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.5 4.5 0 002.25 15z" /></svg>
+                    </div>
+                    <h3 class="card-title">雪场天气</h3>
+                </div>
+                <div class="card-content">
+                    <div id="weather-result" class="result-area">
+                        <div class="default-text">点击下方按钮，获取实时雪场天气预报</div>
+                    </div>
+                    <button class="ski-button auto-request-btn" onclick="getWeatherInfo()">刷新天气</button>
+                </div>
+            </div>
+
+            <!-- 今日新闻 -->
+            <div class="slope-card card-news">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" /></svg>
+                    </div>
+                    <h3 class="card-title">滑雪快讯</h3>
+                </div>
+                <div class="card-content">
+                    <div id="news-result" class="result-area">
+                        <div class="default-text">点击下方按钮，获取最新的滑雪界动态和新闻</div>
+                    </div>
+                    <button class="ski-button auto-request-btn" onclick="getNewsInfo()">获取快讯</button>
+                </div>
+            </div>
+
+            <!-- 网页浏览 -->
+            <div class="slope-card card-browser">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A11.953 11.953 0 0112 13.5c-2.998 0-5.74-1.1-7.843-2.918m0 0A8.959 8.959 0 013 12c0-.778.099-1.533.284-2.253m0 0A11.953 11.953 0 0112 10.5" /></svg>
+                    </div>
+                    <h3 class="card-title">雪道探索</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-goggle">
+                        <input type="url" id="url-input" class="card-input" placeholder="输入网址，探索网络雪道..." onkeypress="handleUrlKeyPress(event)">
+                        <button class="ski-button" onclick="extractContent()">出发</button>
+                    </div>
+                    <div id="browser-result" class="result-area">
+                        <div class="default-text">输入网址，智能分析网页核心内容</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 当前时间 -->
+            <div class="slope-card card-time">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h3 class="card-title">缆车时间</h3>
+                </div>
+                <div class="card-content">
+                    <div id="time-result" class="result-area">
+                        <div class="default-text">点击下方按钮，同步雪场标准时间</div>
+                    </div>
+                    <button class="ski-button auto-request-btn" onclick="getCurrentTime()">同步时间</button>
+                </div>
+            </div>
+
+            <!-- 问题研究 -->
+            <div class="slope-card card-research">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.553L16.5 21.75l-.398-1.197a3.375 3.375 0 00-2.456-2.456L12.5 18l1.197-.398a3.375 3.375 0 002.456-2.456L16.5 14.25l.398 1.197a3.375 3.375 0 002.456 2.456L20.5 18l-1.197.398a3.375 3.375 0 00-2.456 2.456z" /></svg>
+                    </div>
+                    <h3 class="card-title">深度研究</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-goggle">
+                        <input type="text" id="research-input" class="card-input" placeholder="输入主题，如：单板滑雪技巧" onkeypress="handleResearchKeyPress(event)">
+                        <button class="ski-button" onclick="doResearch()">研究</button>
+                    </div>
+                    <div id="research-result" class="result-area">
+                        <div class="default-text">输入您感兴趣的主题，进行深度挖掘和分析</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 计算器 -->
+            <div class="slope-card card-calculator">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 3h.008v.008H8.25v-.008zm0 3h.008v.008H8.25v-.008zm3-6h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm3-6h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zM6 18.75h12A2.25 2.25 0 0020.25 16.5V7.5A2.25 2.25 0 0018 5.25H6A2.25 2.25 0 003.75 7.5v9A2.25 2.25 0 006 18.75z" /></svg>
+                    </div>
+                    <h3 class="card-title">智能计算</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-goggle">
+                        <input type="text" id="calc-input" class="card-input" placeholder="表达式..." onkeypress="handleCalcKeyPress(event)">
+                        <button class="ski-button" onclick="doCalculate()">=</button>
+                    </div>
+                    <div id="calc-result" class="result-area">
+                        <div class="default-text">计算坡度、花费...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件内容 -->
+            <div class="slope-card card-file">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.75h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h3 class="card-title">装备库</h3>
+                </div>
+                <div class="card-content">
+                    <div id="file-result" class="result-area">
+                        <div class="default-text">点击下方按钮，查看您的装备清单</div>
+                    </div>
+                    <button class="ski-button auto-request-btn" onclick="showFileContent()">查看清单</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- 动态效果脚本 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 雪花效果
+            const snowContainer = document.querySelector('.snow-container');
+            for (let i = 0; i < 50; i++) {
+                const snow = document.createElement('div');
+                snow.className = 'snow';
+                const size = Math.random() * 4 + 1;
+                snow.style.width = `${size}px`;
+                snow.style.height = `${size}px`;
+                snow.style.left = `${Math.random() * 100}vw`;
+                snow.style.animationDuration = `${Math.random() * 5 + 5}s`;
+                snow.style.animationDelay = `${Math.random() * 5}s`;
+                snowContainer.appendChild(snow);
+            }
+
+            // 视差效果
+            const mountainBack = document.querySelector('.mountain-back');
+            const mountainFront = document.querySelector('.mountain-front');
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                if (window.innerWidth > 768) { // 只在桌面端启用
+                    mountainBack.style.transform = `translateY(${scrollY * 0.1}px)`;
+                    mountainFront.style.transform = `translateY(${scrollY * 0.25}px)`;
+                }
+            });
+        });
+
+        // --- AI Agent API 功能脚本 (与模板保持一致) ---
+        window.aiAgentAPI = {
+            baseURL: 'http://localhost:8080',
+            async callAPI(endpoint, input, expectedType = null) {
+                try {
+                    const requestId = `Req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    console.log(`🌐 [${requestId}] API请求: ${endpoint} with input: ${input}`);
+                    const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input: input, thread_id: 'dashboard_' + Date.now() })
+                    });
+                    const data = await response.json();
+                    if (!data.success) {
+                        console.error(`❌ [${requestId}] API失败:`, data.error);
+                        return '查询失败: ' + (data.error || '未知错误');
+                    }
+                    return data.response;
+                } catch (error) {
+                    console.error(`❌ API网络错误:`, error);
+                    return '网络错误，请检查本地服务是否开启。';
+                }
+            },
+            weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city, 'weather'),
+            news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic, 'news'),
+            extract: (url) => window.aiAgentAPI.callAPI('extract', url, 'extract'),
+            research: (topic) => window.aiAgentAPI.callAPI('research', topic, 'research'),
+            calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr, 'calculate'),
+            datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query, 'datetime'),
+            file: (operation) => window.aiAgentAPI.callAPI('file', operation, 'file')
+        };
+
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '<div class="loading">正在准备雪道...</div>';
+        }
+
+        function parseAndShowResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            try {
+                let jsonData = result;
+                const jsonStart = result.indexOf('{');
+                const jsonEnd = result.lastIndexOf('}');
+                if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+                    jsonData = result.substring(jsonStart, jsonEnd + 1);
+                }
+                const data = JSON.parse(jsonData);
+                const formattedHTML = formatJSONData(data);
+                element.innerHTML = `<div class="result-container">${formattedHTML}</div>`;
+            } catch (e) {
+                element.innerHTML = `<div class="result-container"><div class="result-text">${result}</div></div>`;
+            }
+        }
+
+        function formatJSONData(data) {
+            if (!data || !data.type) return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            switch (data.type) {
+                case 'weather': return formatWeatherData(data);
+                case 'news': return formatNewsData(data);
+                case 'extract': return formatExtractData(data);
+                case 'research': return formatResearchData(data);
+                case 'calculate': return formatCalculateData(data);
+                case 'datetime': return formatDateTimeData(data);
+                case 'file': return formatFileData(data);
+                default: return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+        }
+
+        function formatWeatherData(data) {
+            return `<div class="weather-display">
+                        <h3>${data.city || '未知地点'}</h3>
+                        <div class="temperature">${data.temperature?.current || 'N/A'}</div>
+                        <p><strong>天气:</strong> ${data.condition || '未知'}</p>
+                        <p><strong>温度范围:</strong> ${data.temperature?.low || 'N/A'} ~ ${data.temperature?.high || 'N/A'}</p>
+                        <p><strong>空气质量:</strong> ${data.airQuality || 'N/A'}</p>
+                        ${data.suggestions?.length > 0 ? `<h4>滑雪建议:</h4><ul>${data.suggestions.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
+                    </div>`;
+        }
+        function formatNewsData(data) {
+            return `<div class="news-display">
+                        <h3>${data.topic}</h3>
+                        <p>${data.summary}</p>
+                        ${data.articles.map(article => `<div class="article"><h4>${article.title}</h4><p>${article.summary}</p><small>${article.source} | ${article.time}</small></div>`).join('')}
+                    </div>`;
+        }
+        function formatExtractData(data) {
+            return `<div class="extract-display">
+                        <h3>${data.title}</h3>
+                        <p><strong>核心内容:</strong> ${data.mainContent}</p>
+                        <h4>总结:</h4><p>${data.summary}</p>
+                    </div>`;
+        }
+        function formatResearchData(data) {
+            return `<div class="research-display">
+                        <h3>${data.topic} 研究报告</h3>
+                        <p>${data.introduction}</p>
+                        <h4>核心发现:</h4><ul>${data.keyFindings.map(f => `<li>${f}</li>`).join('')}</ul>
+                        <h4>结论:</h4><p>${data.conclusion}</p>
+                    </div>`;
+        }
+        function formatCalculateData(data) {
+            return `<div class="calculate-display">
+                        <h3>计算结果</h3>
+                        <p><strong>表达式:</strong> <code>${data.expression}</code></p>
+                        <p style="font-size: 1.5rem; font-weight: bold;"><strong>结果:</strong> ${data.result}</p>
+                        <h4>步骤:</h4><ol>${data.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+                    </div>`;
+        }
+        function formatDateTimeData(data) {
+            return `<div class="datetime-display">
+                        <div class="current-time">${data.currentTime}</div>
+                        <p style="text-align:center;">${data.date} | ${data.weekday}</p>
+                    </div>`;
+        }
+        function formatFileData(data) {
+            return `<div class="file-display">
+                        <h3>装备清单</h3>
+                        <p><strong>路径:</strong> <code>${data.path}</code></p>
+                        <h4>内容:</h4>
+                        <pre class="content-text">${data.content}</pre>
+                    </div>`;
+        }
+
+        function showResult(elementId, result) { parseAndShowResult(elementId, result); }
+
+        async function handleRequest(button, elementId, apiCall) {
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '处理中...';
+            showLoading(elementId);
+            try {
+                const result = await apiCall();
+                showResult(elementId, result);
+            } catch (error) {
+                showResult(elementId, `请求失败: ${error.message}`);
+            }
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+
+        function getWeatherInfo() { handleRequest(event.target, 'weather-result', () => window.aiAgentAPI.weather('崇礼')); }
+        function getNewsInfo() { handleRequest(event.target, 'news-result', () => window.aiAgentAPI.news('滑雪运动')); }
+        function extractContent() {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) { showResult('browser-result', '请输入有效的网址'); return; }
+            handleRequest(event.target, 'browser-result', () => window.aiAgentAPI.extract(url));
+        }
+        function doResearch() {
+            const topic = document.getElementById('research-input').value.trim();
+            if (!topic) { showResult('research-result', '请输入研究主题'); return; }
+            handleRequest(event.target, 'research-result', () => window.aiAgentAPI.research(topic));
+        }
+        function doCalculate() {
+            const expr = document.getElementById('calc-input').value.trim();
+            if (!expr) { showResult('calc-result', '请输入数学表达式'); return; }
+            handleRequest(event.target, 'calc-result', () => window.aiAgentAPI.calculate(expr));
+        }
+        function getCurrentTime() { handleRequest(event.target, 'time-result', () => window.aiAgentAPI.datetime('current')); }
+        function showFileContent() {
+            const path = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
+            handleRequest(event.target, 'file-result', () => window.aiAgentAPI.file(`read:${path}`));
+        }
+
+        function handleUrlKeyPress(event) { if (event.key === 'Enter') extractContent(); }
+        function handleResearchKeyPress(event) { if (event.key === 'Enter') doResearch(); }
+        function handleCalcKeyPress(event) { if (event.key === 'Enter') doCalculate(); }
+
+        // 页面加载后自动请求所有功能
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.querySelector('.card-weather .ski-button').click();
+                document.querySelector('.card-news .ski-button').click();
+                document.querySelector('.card-time .ski-button').click();
+                document.querySelector('.card-file .ski-button').click();
+                
+                const urlInput = document.getElementById('url-input');
+                urlInput.value = 'https://www.goski.cn/';
+                document.querySelector('.card-browser .ski-button').click();
+
+                const researchInput = document.getElementById('research-input');
+                researchInput.value = '如何选择第一块滑雪板';
+                document.querySelector('.card-research .ski-button').click();
+
+                const calcInput = document.getElementById('calc-input');
+                calcInput.value = '(1999 + 880) * 0.8'; // 雪板+雪鞋打八折
+                document.querySelector('.card-calculator .ski-button').click();
+            }, 1000);
+        });
+    </script>
+
+<script>
+// AI网页设计师 - 高级功能集成
+// 检查是否已经存在aiAgentAPI，如果不存在才创建
+if (!window.aiAgentAPI) {
+    window.aiAgentAPI = {
+        baseURL: 'http://localhost:8080',
+        
+        // 通用API调用函数
+        async callAPI(endpoint, input) {
+            try {
+                const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        input: input, 
+                        thread_id: 'ai_webpage_' + Date.now() 
+                    })
+                });
+                const data = await response.json();
+                return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+            } catch (error) {
+                return '网络错误: ' + error.message;
+            }
+        },
+        
+        // 各种功能的便捷方法
+        weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+        news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+        extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+        research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+        calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+        datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+        file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+        system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+    };
+    console.log('🔧 创建了简化版 aiAgentAPI');
+} else {
+    console.log('✅ 检测到已存在完整版 aiAgentAPI，跳过重复创建');
+}
+
+// 智能结果显示函数 - 尝试使用现有的JSON处理逻辑
+function showSmartResult(element, result) {
+    // 检查是否存在完整的JSON处理函数
+    if (typeof window.parseAndShowResult === 'function') {
+        // 为element创建临时ID（如果没有）
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('🎯 使用完整版JSON处理逻辑显示结果');
+        window.parseAndShowResult(element.id, result);
+    } else if (typeof window.showResult === 'function') {
+        // 使用showResult函数
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('📋 使用showResult函数显示结果');
+        window.showResult(element.id, result);
+    } else {
+        // 回退到简单显示
+        console.log('📝 使用简单文本显示结果');
+        element.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+    }
+}
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        
+        // 为输入框阻止事件冒泡，这样点击输入框不会触发AI请求
+        const inputs = element.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.style.cursor = 'text';
+            input.addEventListener('click', function(event) {
+                event.stopPropagation(); // 阻止事件冒泡
+                console.log('📝 输入框可正常编辑');
+            });
+        });
+        
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body, .result-container') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div class="loading">正在处理中...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    const cityInput = this.querySelector('input[type="text"]');
+                    const city = cityInput ? cityInput.value.trim() || '北京' : '北京';
+                    result = await window.aiAgentAPI.weather(city);
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    const topicInput = this.querySelector('input[type="text"]');
+                    const topic = topicInput ? topicInput.value.trim() || '科技新闻' : '科技新闻';
+                    result = await window.aiAgentAPI.news(topic);
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    const urlInput = this.querySelector('input[type="text"], input[type="url"]');
+                    if (urlInput && urlInput.value.trim()) {
+                        result = await window.aiAgentAPI.extract(urlInput.value.trim());
+                    } else {
+                        result = '请在输入框中输入URL，然后点击卡片空白区域触发提取\n示例: https://www.example.com';
+                    }
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    const researchInput = this.querySelector('input[type="text"], textarea');
+                    const topic = researchInput ? researchInput.value.trim() || '人工智能发展趋势' : '人工智能发展趋势';
+                    result = await window.aiAgentAPI.research(topic);
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    const calcInput = this.querySelector('input[type="text"]');
+                    const expr = calcInput ? calcInput.value.trim() || 'sqrt(16) + log(10)' : 'sqrt(16) + log(10)';
+                    result = await window.aiAgentAPI.calculate(expr);
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    const fileInput = this.querySelector('input[type="text"]');
+                    const operation = fileInput ? fileInput.value.trim() || 'list:.' : 'list:.';
+                    result = await window.aiAgentAPI.file(operation);
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n输入框可正常编辑，点击卡片其他区域触发AI请求';
+                }
+                
+                // 使用智能结果显示
+                showSmartResult(loadingElement, result);
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+    console.log('💡 提示：输入框可正常编辑，点击卡片其他区域触发AI请求');
+});
+</script>
+</body>
+</html>

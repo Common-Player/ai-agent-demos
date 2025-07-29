@@ -4,8 +4,9 @@ import json
 import threading
 import atexit
 from concurrent.futures import ThreadPoolExecutor
-from flask import Flask, request, jsonify, render_template, Response
+from flask import Flask, request, jsonify, render_template, Response, session
 from flask_cors import CORS
+from flask_session import Session
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 from langchain_tavily import TavilySearch, TavilyExtract
@@ -16,6 +17,8 @@ from langgraph.checkpoint.memory import MemorySaver
 from extended_tools import get_extended_tools
 # 删除未使用的 webpage_generator 导入
 from ai_webpage_designer import get_ai_webpage_designer_tool
+from auth_manager import get_auth_manager
+from history_manager import get_history_manager
 
 try:
     from langchain_google_genai import ChatGoogleGenerativeAI
@@ -45,6 +48,14 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Flask会话配置
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'ai_agent:'
+Session(app)
 
 # 全局事件循环线程
 _loop = None
@@ -195,7 +206,7 @@ def create_deepseek_model():
         base_url="https://api.deepseek.com"
     )
 
-def create_gemini_model(model_name="gemini-2.5-flash"):
+def create_gemini_model(model_name="gemini-2.5-pro"):
     """创建 Gemini 模型实例"""
     if not GEMINI_AVAILABLE:
         raise ValueError("Gemini 模型不可用，请先安装 langchain-google-genai")
@@ -225,13 +236,13 @@ MODEL_CONFIG = {
     'research': {
         'name': 'Gemini 2.5 Flash',
         'types': ['research', 'news'],
-        'create_func': lambda: create_gemini_model("gemini-2.5-flash")
+        'create_func': lambda: create_gemini_model("gemini-2.5-pro")
     },
     # AI设计师任务使用 Gemini Pro
     'ai_design': {
         'name': 'Gemini 2.5 Pro',
         'types': ['ai_design'],
-        'create_func': lambda: create_gemini_model("gemini-2.5-flash")
+        'create_func': lambda: create_gemini_model("gemini-2.5-pro")
     }
 }
 
@@ -274,7 +285,7 @@ for model_type, config in MODEL_CONFIG.items():
         if model_type == 'simple':
             try:
                 print("🔄 尝试使用 Gemini Flash 作为简单任务的备选模型...")
-                fallback_model = create_gemini_model("gemini-2.5-flash")
+                fallback_model = create_gemini_model("gemini-2.5-pro")
                 models[model_type] = fallback_model
                 # 备选模型也使用无记忆模式，保持与原配置一致
                 agent = create_react_agent(
@@ -291,7 +302,7 @@ for model_type, config in MODEL_CONFIG.items():
         elif model_type == 'ai_design':
             try:
                 print("🔄 AI设计师模型初始化失败，尝试使用备选模型...")
-                fallback_model = create_gemini_model("gemini-2.5-flash")
+                fallback_model = create_gemini_model("gemini-2.5-pro")
                 models[model_type] = fallback_model
                 # AI设计师任务使用记忆模式
                 checkpoint = MemorySaver()
@@ -358,10 +369,30 @@ async def run_agent_query(prompt: str, thread_id: str = "web_session", model_typ
         print(f"❌ {model_name} 查询处理失败: {str(e)}")
         return {"success": False, "error": str(e)}
 
+def get_current_user():
+    """获取当前登录用户信息"""
+    access_token = session.get('access_token')
+    if not access_token:
+        return None
+    
+    try:
+        auth_manager = get_auth_manager()
+        return auth_manager.get_current_user(access_token)
+    except Exception as e:
+        print(f"❌ 获取当前用户失败: {e}")
+        return None
+
 @app.route('/')
 def index():
     """主页面"""
-    return render_template('index.html')
+    user = get_current_user()
+    # 如果集成了用户认证，使用增强版模板
+    return render_template('index.html', user=user)
+
+@app.route('/auth')
+def auth_page():
+    """用户认证页面"""
+    return render_template('auth.html')
 
 @app.route('/generated/<filename>')
 def serve_generated_page(filename):
@@ -388,6 +419,167 @@ def serve_demo():
             return "demo.html文件不存在", 404
     except Exception as e:
         return f"访问demo.html错误: {str(e)}", 500
+
+# 用户认证路由
+@app.route('/api/register', methods=['POST'])
+def register():
+    """用户注册"""
+    try:
+        data = request.get_json()
+        email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        username = data.get('username', '').strip()
+        
+        if not email or not password:
+            return jsonify({"success": False, "message": "邮箱和密码不能为空"})
+        
+        auth_manager = get_auth_manager()
+        result = auth_manager.register(email, password, username)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"注册失败: {str(e)}"})
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """用户登录"""
+    try:
+        data = request.get_json()
+        email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        
+        if not email or not password:
+            return jsonify({"success": False, "message": "邮箱和密码不能为空"})
+        
+        auth_manager = get_auth_manager()
+        result = auth_manager.login(email, password)
+        
+        if result['success']:
+            # 保存会话信息
+            session['access_token'] = result['session']['access_token']
+            session['refresh_token'] = result['session']['refresh_token']
+            session['user_id'] = result['user']['id']
+            session['user_email'] = result['user']['email']
+            session['username'] = result['user']['username']
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"登录失败: {str(e)}"})
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    """用户登出"""
+    try:
+        auth_manager = get_auth_manager()
+        result = auth_manager.logout()
+        
+        # 清除会话信息
+        session.clear()
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"登出失败: {str(e)}"})
+
+@app.route('/api/user', methods=['GET'])
+def get_user_info():
+    """获取当前用户信息"""
+    user = get_current_user()
+    if user:
+        return jsonify({"success": True, "user": user})
+    else:
+        return jsonify({"success": False, "message": "未登录"})
+
+# 用户历史记录路由
+@app.route('/api/history/prompts', methods=['GET'])
+def get_prompt_history():
+    """获取用户提示词历史记录"""
+    user = get_current_user()
+    if not user:
+        return jsonify({"success": False, "message": "请先登录"})
+    
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        prompt_type = request.args.get('type')
+        
+        history_manager = get_history_manager()
+        access_token = session.get('access_token')
+        
+        # 确保access_token存在
+        if not access_token:
+            return jsonify({
+                "success": False,
+                "error": "未找到用户访问令牌"
+            })
+        
+        history = history_manager.get_user_prompt_history(
+            user['id'], limit, prompt_type, access_token
+        )
+        
+        print(f"📊 获取用户 {user['id']} 的提示词历史: {len(history)} 条记录")
+        
+        return jsonify({
+            "success": True,
+            "history": history,
+            "total": len(history)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"获取历史记录失败: {str(e)}"})
+
+@app.route('/api/history/webpages', methods=['GET'])
+def get_webpage_history():
+    """获取用户网页生成历史记录"""
+    user = get_current_user()
+    if not user:
+        return jsonify({"success": False, "message": "请先登录"})
+    
+    try:
+        limit = request.args.get('limit', 20, type=int)
+        
+        history_manager = get_history_manager()
+        access_token = session.get('access_token')
+        
+        # 确保access_token存在
+        if not access_token:
+            return jsonify({
+                "success": False,
+                "error": "未找到用户访问令牌"
+            })
+        
+        history = history_manager.get_user_webpage_generations(user['id'], limit, access_token)
+        
+        print(f"🌐 获取用户 {user['id']} 的网页生成历史: {len(history)} 条记录")
+        
+        return jsonify({
+            "success": True,
+            "history": history,
+            "total": len(history)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"获取网页生成记录失败: {str(e)}"})
+
+@app.route('/api/history/stats', methods=['GET'])
+def get_user_stats():
+    """获取用户统计信息"""
+    user = get_current_user()
+    if not user:
+        return jsonify({"success": False, "message": "请先登录"})
+    
+    try:
+        history_manager = get_history_manager()
+        stats = history_manager.get_user_statistics(user['id'])
+        
+        return jsonify({
+            "success": True,
+            "stats": stats
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"获取统计信息失败: {str(e)}"})
 
 # 删除未使用的 /api/chat 路由
 
@@ -525,6 +717,57 @@ def preset_query(preset_type):
         
         # 使用全局事件循环运行异步函数
         result = run_async_in_loop(run_agent_query(prompt, thread_id, model_type))
+        
+        # 如果用户已登录且是AI设计任务，保存历史记录
+        user = get_current_user()
+        if user and result.get('success') and preset_type == 'ai_design':
+            try:
+                history_manager = get_history_manager()
+                access_token = session.get('access_token')
+                
+                # 确保access_token存在
+                if not access_token:
+                    print("❌ 未找到用户访问令牌，无法保存历史记录")
+                    return jsonify(result)
+                
+                # 保存AI设计的提示词历史
+                prompt_save_result = history_manager.save_prompt_history(
+                    user['id'], user_input, result.get('response', ''), 
+                    preset_type, model_type, access_token
+                )
+                print(f"💾 保存AI设计提示词历史记录结果: {prompt_save_result}")
+                
+                # 保存网页生成记录
+                response_text = result.get('response', '')
+                filename = None
+                
+                # 尝试从响应中提取文件名
+                import re
+                filename_match = re.search(r'ai_designed_webpage_(\d+)\.html', response_text)
+                if filename_match:
+                    filename = filename_match.group(0)
+                
+                if filename:
+                    # 尝试读取生成的HTML内容
+                    try:
+                        generated_path = os.path.join(
+                            os.path.dirname(__file__), 
+                            'generated_pages', 
+                            filename
+                        )
+                        html_content = ""
+                        if os.path.exists(generated_path):
+                            with open(generated_path, 'r', encoding='utf-8') as f:
+                                html_content = f.read()
+                        
+                        webpage_save_result = history_manager.save_webpage_generation(
+                            user['id'], user_input, html_content, filename, preset_type, access_token
+                        )
+                        print(f"🌐 保存网页生成记录结果: {webpage_save_result}")
+                    except Exception as e:
+                        print(f"❌ 保存网页生成记录失败: {e}")
+            except Exception as e:
+                print(f"❌ 保存用户历史记录失败: {e}")
         
         return jsonify(result)
         

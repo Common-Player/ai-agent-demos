@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Nexus Dashboard - 智能中枢</title>
+    <!-- 引入科技感字体：Share Tech Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* 全局重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 定义CSS变量，便于主题管理和修改 */
+        :root {
+            --bg-dark: #0a0a1a; /* 深色背景 */
+            --card-bg: rgba(15, 25, 40, 0.8); /* 卡片背景，半透明深蓝 */
+            --card-border: rgba(50, 150, 255, 0.2); /* 卡片边框，半透明蓝色 */
+            --card-shadow-light: rgba(0, 150, 255, 0.1); /* 卡片阴影，淡蓝色 */
+            --card-shadow-glow: rgba(0, 200, 255, 0.4); /* 卡片发光阴影，亮蓝色 */
+            --text-light: #e0f7fa; /* 亮色文本 */
+            --text-muted: #a0b0c0; /* 柔和文本 */
+            --accent-blue: #00c6ff; /* 强调色：电光蓝 */
+            --accent-purple: #0072ff; /* 强调色：深紫蓝 */
+            --accent-green: #00ff99; /* 强调色：荧光绿 */
+            --accent-orange: #ffcc00; /* 强调色：科技橙 */
+            --input-bg: rgba(20, 30, 50, 0.7); /* 输入框背景 */
+            --input-border: rgba(50, 150, 255, 0.3); /* 输入框边框 */
+            --result-bg: rgba(20, 30, 50, 0.7); /* 结果区域背景 */
+            --result-border: rgba(50, 150, 255, 0.2); /* 结果区域边框 */
+            --loading-color: var(--accent-blue); /* 加载动画颜色 */
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            padding: 30px;
+            color: var(--text-light);
+            overflow-x: hidden; /* 防止横向滚动条 */
+            position: relative;
+        }
+
+        /* 背景动画层：模拟科技感网格和光晕 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(0, 100, 200, 0.1) 0%, transparent 70%), /* 中心光晕 */
+                linear-gradient(45deg, rgba(0, 50, 100, 0.05) 25%, transparent 25%, transparent 75%, rgba(0, 50, 100, 0.05) 75%, rgba(0, 50, 100, 0.05) 100%), /* 网格线1 */
+                linear-gradient(-45deg, rgba(0, 50, 100, 0.05) 25%, transparent 25%, transparent 75%, rgba(0, 50, 100, 0.05) 75%, rgba(0, 50, 100, 0.05) 100%); /* 网格线2 */
+            background-size: 50px 50px, 50px 50px, 50px 50px; /* 网格大小 */
+            animation: backgroundGrid 60s linear infinite; /* 网格缓慢移动动画 */
+            z-index: -1; /* 确保在内容下方 */
+            opacity: 0.3; /* 半透明 */
+        }
+
+        @keyframes backgroundGrid {
+            from { background-position: 0 0; }
+            to { background-position: 50px 50px; } /* 移动网格 */
+        }
+
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1; /* 确保内容在背景之上 */
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--text-light);
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        /* 头部标题下方的科技感线条 */
+        .dashboard-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            box-shadow: 0 0 15px var(--accent-blue);
+            border-radius: 5px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 0 20px var(--accent-blue), 0 0 30px var(--accent-purple); /* 
