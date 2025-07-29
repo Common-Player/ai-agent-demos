@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from typing import Dict, Any
 from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage
@@ -12,6 +13,53 @@ def get_agent_model():
     from web_agent import create_gemini_model
     return create_gemini_model()
 
+def validate_html_completeness(html_content: str) -> tuple[bool, str]:
+    """验证HTML内容是否完整
+    
+    Returns:
+        tuple: (是否完整, 错误信息)
+    """
+    if not html_content or len(html_content.strip()) < 100:
+        return False, "HTML内容太短或为空"
+    
+    # 检查是否仍然包含markdown代码块标记
+    if html_content.strip().startswith('```'):
+        return False, "HTML内容包含未处理的markdown代码块标记"
+    
+    # 检查基本HTML结构
+    required_tags = ['<!DOCTYPE html>', '<html', '<head>', '<body>', '</html>']
+    for tag in required_tags:
+        if tag not in html_content:
+            return False, f"缺少必要的HTML标签: {tag}"
+    
+    # 检查HTML标签是否配对
+    opening_tags = re.findall(r'<([a-zA-Z][^>]*)>', html_content)
+    closing_tags = re.findall(r'</([a-zA-Z][^>]*)>', html_content)
+    
+    # 提取标签名（去除属性）
+    opening_tag_names = [tag.split()[0] for tag in opening_tags if not tag.startswith('/')]
+    closing_tag_names = [tag for tag in closing_tags]
+    
+    # 检查关键标签是否配对
+    critical_tags = ['html', 'head', 'body']
+    for tag in critical_tags:
+        if opening_tag_names.count(tag) != closing_tag_names.count(tag):
+            return False, f"关键标签 {tag} 未正确配对"
+    
+    # 检查内容是否被截断（检查常见的截断标志）
+    truncation_indicators = [
+        html_content.endswith('...'),
+        html_content.endswith('/*'),  # CSS被截断
+        html_content.endswith('{'),   # CSS或JS被截断
+        html_content.endswith('function'),  # JS函数被截断
+        html_content.count('{') > html_content.count('}') + 5,  # 大量未闭合的花括号
+    ]
+    
+    if any(truncation_indicators):
+        return False, "HTML内容可能被截断"
+    
+    return True, "HTML内容完整"
+
 @tool
 def ai_webpage_designer(description: str) -> str:
     """AI网页设计师 - 让AI模型深度重新设计整个网页模板
@@ -21,20 +69,32 @@ def ai_webpage_designer(description: str) -> str:
     """
     print(f"🎨 AI网页设计师正在工作: {description[:50]}...")
     
-    try:
-        # 读取demo.html作为参考模板
-        demo_path = os.path.join(os.path.dirname(__file__), 'demo.html')
-        if not os.path.exists(demo_path):
-            return "错误: 找不到demo.html模板文件"
+    max_retries = 3  # 最大重试次数
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        try:
+            # 读取demo.html作为参考模板
+            demo_path = os.path.join(os.path.dirname(__file__), 'demo.html')
+            if not os.path.exists(demo_path):
+                return "错误: 找不到demo.html模板文件"
+                
+            with open(demo_path, 'r', encoding='utf-8') as f:
+                base_template = f.read()
             
-        with open(demo_path, 'r', encoding='utf-8') as f:
-            base_template = f.read()
-        
-        # 让AI模型深度分析和重新设计
-        ai_model = get_agent_model()
-        
-        # 构建给AI的详细prompt
-        design_prompt = f"""
+            # 让AI模型深度分析和重新设计
+            ai_model = get_agent_model()
+            
+            # 根据重试次数调整prompt策略
+            if retry_count == 0:
+                additional_instruction = ""
+            elif retry_count == 1:
+                additional_instruction = "\n\n重要提醒：请确保生成完整的HTML代码，包含完整的</html>结束标签。不要在中途截断。"
+            else:
+                additional_instruction = "\n\n关键要求：这是最后一次生成机会，请务必输出完整的HTML代码，从<!DOCTYPE html>开始到</html>结束，中间不能有任何截断。确保所有CSS样式和JavaScript代码都完整。"
+            
+            # 构建给AI的详细prompt
+            design_prompt = f"""
 你是一位专业的网页设计师和前端开发专家。用户要求你设计一个网页，需求如下：
 
 用户需求: {description}
@@ -56,93 +116,138 @@ def ai_webpage_designer(description: str) -> str:
 {base_template}
 
 请生成完整的HTML代码，要有创意和个性化，充分体现用户需求的特色。
-请直接返回完整的HTML代码，不需要其他解释。
+请直接返回完整的HTML代码，不需要其他解释。{additional_instruction}
 """
 
-        print("🤖 AI模型正在深度分析和重新设计...")
-        
-        # 调用AI模型进行深度设计
-        config = RunnableConfig(configurable={"thread_id": f"designer_{hash(description)}"})
-        
-        result = ai_model.invoke(
-            [HumanMessage(content=design_prompt)],
-            config=config
-        )
-        
-        # 提取AI生成的HTML代码
-        ai_generated_html = result.content
-        
-        # 确保内容是字符串格式
-        if isinstance(ai_generated_html, list):
-            # 如果是列表，提取文本内容
-            html_text = ""
-            for item in ai_generated_html:
-                if isinstance(item, str):
-                    html_text += item
-                elif hasattr(item, 'text'):
-                    html_text += str(getattr(item, 'text', ''))
-                elif isinstance(item, dict):
-                    # 安全地访问字典内容
-                    text_content = item.get('text', '')
-                    html_text += str(text_content)
+            print(f"🤖 AI模型正在深度分析和重新设计... (尝试 {retry_count + 1}/{max_retries})")
+            
+            # 调用AI模型进行深度设计
+            config = RunnableConfig(configurable={"thread_id": f"designer_{hash(description)}_{retry_count}"})
+            
+            result = ai_model.invoke(
+                [HumanMessage(content=design_prompt)],
+                config=config
+            )
+            
+            # 提取AI生成的HTML代码
+            ai_generated_html = result.content
+            
+            # 确保内容是字符串格式
+            if isinstance(ai_generated_html, list):
+                # 如果是列表，提取文本内容
+                html_text = ""
+                for item in ai_generated_html:
+                    if isinstance(item, str):
+                        html_text += item
+                    elif hasattr(item, 'text'):
+                        html_text += str(getattr(item, 'text', ''))
+                    elif isinstance(item, dict):
+                        # 安全地访问字典内容
+                        text_content = item.get('text', '')
+                        html_text += str(text_content)
+                    else:
+                        html_text += str(item)
+                ai_generated_html = html_text
+            elif not isinstance(ai_generated_html, str):
+                ai_generated_html = str(ai_generated_html)
+            
+            # 清理和验证生成的HTML
+            cleaned_html = clean_and_validate_html(ai_generated_html, description)
+            
+            # 验证HTML完整性
+            is_complete, validation_msg = validate_html_completeness(cleaned_html)
+            
+            if not is_complete:
+                print(f"⚠️ HTML验证失败 (尝试 {retry_count + 1}): {validation_msg}")
+                retry_count += 1
+                if retry_count < max_retries:
+                    print(f"🔄 准备重试... (还有 {max_retries - retry_count} 次机会)")
+                    time.sleep(1)  # 短暂延迟后重试
+                    continue
                 else:
-                    html_text += str(item)
-            ai_generated_html = html_text
-        elif not isinstance(ai_generated_html, str):
-            ai_generated_html = str(ai_generated_html)
-        
-        # 清理和验证生成的HTML
-        cleaned_html = clean_and_validate_html(ai_generated_html, description)
-        
-        # 保存生成的网页
-        output_filename = f"ai_designed_webpage_{hash(description) % 10000}.html"
-        output_path = os.path.join(os.path.dirname(__file__), 'generated_pages', output_filename)
-        
-        # 确保输出目录存在
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(cleaned_html)
-        
-        print(f"✅ AI深度设计完成: {output_filename}")
-        
-        return f"""🎨 AI网页设计师作品完成！
+                    print("❌ 已达到最大重试次数，将保存当前结果")
+            
+            # 保存生成的网页
+            output_filename = f"ai_designed_webpage_{hash(description) % 10000}.html"
+            output_path = os.path.join(os.path.dirname(__file__), 'generated_pages', output_filename)
+            
+            # 确保输出目录存在
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(cleaned_html)
+            
+            # 根据验证结果显示不同的成功信息
+            if is_complete:
+                print(f"✅ AI深度设计完成: {output_filename} (通过完整性验证)")
+                quality_status = "✅ 质量检查通过"
+            else:
+                print(f"⚠️ AI设计完成但可能不完整: {output_filename} ({validation_msg})")
+                quality_status = f"⚠️ 质量检查: {validation_msg}"
+            
+            return f"""🎨 AI网页设计师作品完成！
 
 📄 文件名: {output_filename}
 📁 保存路径: generated_pages/{output_filename}
 🌐 访问地址: http://localhost:8080/generated/{output_filename}
+{quality_status}
 
 🤖 AI设计特色:
 - 基于您的需求进行深度重新设计
 - 不是简单的样式修改，而是结构性的创新
 - 充分体现了"{description[:50]}..."的设计理念
 - 保持了所有7个功能区域的完整性
+- 经过 {retry_count + 1} 次生成优化
 
 包含功能:
 🌤️ 天气查询 | 📰 今日新闻 | 🌐 网页浏览 | 🔬 问题研究
 🧮 智能计算 | ⏰ 时间信息 | 📁 文件管理
 
 🎉 这是AI真正的创造性设计作品！"""
-        
-    except Exception as e:
-        error_msg = f"AI网页设计失败: {str(e)}"
-        print(f"❌ {error_msg}")
-        return error_msg
+            
+        except Exception as e:
+            print(f"❌ 生成失败 (尝试 {retry_count + 1}): {str(e)}")
+            retry_count += 1
+            if retry_count < max_retries:
+                print(f"🔄 准备重试... (还有 {max_retries - retry_count} 次机会)")
+                time.sleep(2)  # 延迟后重试
+                continue
+            else:
+                error_msg = f"AI网页设计失败 (已重试{max_retries}次): {str(e)}"
+                print(f"❌ {error_msg}")
+                return error_msg
+    
+    return "❌ 生成失败：已达到最大重试次数"
 
 def clean_and_validate_html(html_content: str, description: str) -> str:
     """清理和验证AI生成的HTML代码"""
     
-    # 如果AI返回的内容包含markdown代码块，提取HTML部分
+    original_content = html_content
+    
+    # 更强力的markdown代码块处理
     if '```html' in html_content:
         # 提取```html和```之间的内容
-        html_match = re.search(r'```html\s*\n(.*?)\n```', html_content, re.DOTALL | re.IGNORECASE)
+        html_match = re.search(r'```html\s*\n?(.*?)(?:\n```|$)', html_content, re.DOTALL | re.IGNORECASE)
         if html_match:
             html_content = html_match.group(1)
+        else:
+            # 如果没有找到结束标记，尝试从```html开始提取所有内容
+            start_idx = html_content.find('```html')
+            if start_idx != -1:
+                html_content = html_content[start_idx + 7:].strip()
     elif '```' in html_content:
         # 提取```和```之间的内容
-        html_match = re.search(r'```\s*\n(.*?)\n```', html_content, re.DOTALL)
+        html_match = re.search(r'```\s*\n?(.*?)(?:\n```|$)', html_content, re.DOTALL)
         if html_match:
             html_content = html_match.group(1)
+        else:
+            # 如果没有找到结束标记，尝试从```开始提取所有内容
+            start_idx = html_content.find('```')
+            if start_idx != -1:
+                html_content = html_content[start_idx + 3:].strip()
+    
+    # 移除开头的```html如果还存在
+    html_content = re.sub(r'^```html\s*\n?', '', html_content, flags=re.IGNORECASE)
     
     # 确保HTML有基本结构
     if '<!DOCTYPE html>' not in html_content and '<html' not in html_content:

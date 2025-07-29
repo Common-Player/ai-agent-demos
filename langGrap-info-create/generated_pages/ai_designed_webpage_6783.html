@@ -1,0 +1,407 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>战场指挥中心 - 战术数据面板</title>
+        <!-- 引入科技感字体：Orbitron 用于标题，Roboto Mono 用于内容 -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            /* 全局重置与基础样式 */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            /* 定义CSS变量，便于主题管理 */
+            :root {
+                --color-bg-dark: #1a1a2e; /* 深背景 */
+                --color-bg-module: rgba(27, 27, 38, 0.9); /* 模块背景 */
+                --color-text-light: #e0e0e0; /* 亮文本 */
+                --color-accent-blue: #00f0ff; /* 强调蓝 (霓虹蓝) */
+                --color-accent-red: #ff416c; /* 强调红 (警示红) */
+                --color-accent-green: #00ff80; /* 强调绿 (数据绿) */
+                --color-border-light: rgba(0, 240, 255, 0.2); /* 边框亮色 */
+                --color-border-dark: rgba(0, 240, 255, 0.05); /* 边框暗色 */
+                --color-input-bg: rgba(0, 0, 0, 0.3); /* 输入框背景 */
+                --color-input-border: rgba(0, 240, 255, 0.4); /* 输入框边框 */
+                --color-button-bg: linear-gradient(
+                    135deg,
+                    #00f0ff,
+                    #00aaff
+                ); /* 按钮背景 */
+                --color-button-hover: linear-gradient(
+                    135deg,
+                    #00aaff,
+                    #00f0ff
+                ); /* 按钮悬停 */
+                --color-error: #e74c3c; /* 错误色 */
+                --color-info: #888; /* 信息色 */
+            }
+
+            body {
+                font-family: 'Roboto Mono', monospace, sans-serif; /* 科技感字体 */
+                background: var(--color-bg-dark);
+                min-height: 100vh;
+                padding: 20px;
+                color: var(--color-text-light);
+                overflow-x: hidden; /* 防止横向滚动 */
+                /* 科技感网格背景 */
+                background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyNjI2MzYiIGZpbGwtb3BhY2l0eT0iMC41Ij48cGF0aCBkPSJNMjAgMTAuOTk2VjIwaDEwLjk5NkwyMCAxMC45OTZ6TTIwIDMwLjk5NlYyMGgxMC45OTZMMjAgMzAuOTk2em0wLTIwLjAwNFYwaDEwLjk5NkwyMCAxMC45OTZ6TTIwIDQwVjI5LjAwNGgxMC45OTZMMjAgNDB6TTMwLjAwNCAyMFYxMC45OTZINDBMMzAuMDA0IDIwem0tMjAuMDA0IDBWMTBhMTkuOTk4IDE5Ljk5OCAwIDAgMSAxMC45OTYgMTB6TTMwLjAwNCAzMFYyMC4wMDRIODBMMzAuMDA0IDMwem0tMjAuMDA0IDBWMTkuMDA0SDQwTDIwIDMwem0tMjAgMFYxMC45OTZIMTBMMCAyMHoiLz48L2c+PC9nPjwvc3ZnPg==');
+                background-size: 40px 40px;
+                background-attachment: fixed;
+            }
+
+            /* 头部区域 - 指挥中心标题 */
+            .command-header {
+                text-align: center;
+                margin-bottom: 40px;
+                color: var(--color-accent-blue);
+                text-shadow: 0 0 15px var(--color-accent-blue);
+                animation: headerGlow 2s infinite alternate; /* 标题发光动画 */
+            }
+
+            .command-header h1 {
+                font-family: 'Orbitron', sans-serif; /* 标题字体 */
+                font-size: 3.5rem;
+                margin-bottom: 10px;
+                font-weight: 700;
+                letter-spacing: 3px;
+                position: relative;
+            }
+
+            /* 标题两侧的扫描线装饰 */
+            .command-header h1::before,
+            .command-header h1::after {
+                content: '';
+                position: absolute;
+                height: 2px;
+                background: var(--color-accent-blue);
+                box-shadow: 0 0 10px var(--color-accent-blue);
+                animation: scanline 3s infinite linear; /* 扫描线动画 */
+            }
+
+            .command-header h1::before {
+                width: 30%;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .command-header h1::after {
+                width: 30%;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .command-header p {
+                font-size: 1.3rem;
+                opacity: 0.8;
+                letter-spacing: 1px;
+                color: var(--color-text-light);
+            }
+
+            /* 主控制台容器 */
+            .ops-console-container {
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: 20px;
+                border: 2px solid var(--color-border-light);
+                border-radius: 15px;
+                box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+                background: rgba(10, 10, 15, 0.8); /* 半透明深色背景 */
+                backdrop-filter: blur(5px); /* 背景模糊效果 */
+                position: relative;
+                overflow: hidden;
+            }
+
+            /* 容器内部的脉冲发光效果 */
+            .ops-console-container::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(
+                    circle at center,
+                    rgba(0, 240, 255, 0.05) 0%,
+                    transparent 70%
+                );
+                animation: pulseGlow 8s infinite alternate; /* 脉冲发光动画 */
+                z-index: -1;
+            }
+
+            /* 网格布局 */
+            .ops-console-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 25px;
+                grid-auto-rows: minmax(320px, auto); /* 增加模块最小高度 */
+            }
+
+            /* 模块卡片样式 */
+            .console-module {
+                background: var(--color-bg-module);
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+                border: 1px solid var(--color-border-dark);
+                transition: all 0.3s ease-in-out;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* 模块顶部的强调线 */
+            .console-module::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: var(--color-accent-blue);
+                box-shadow: 0 0 10px var(--color-accent-blue);
+                border-radius: 12px 12px 0 0;
+            }
+
+            /* 模块悬停效果 */
+            .console-module:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 0 30px var(--color-accent-blue);
+                border-color: var(--color-accent-blue);
+            }
+
+            /* 模块头部 */
+            .module-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+                border-bottom: 1px dashed var(--color-border-light); /* 虚线分隔 */
+                padding-bottom: 15px;
+            }
+
+            /* 模块图标 */
+            .module-icon {
+                font-size: 2.2rem;
+                margin-right: 15px;
+                width: 55px;
+                height: 55px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--color-accent-blue);
+                border-radius: 50%; /* 圆形图标 */
+                color: var(--color-bg-dark);
+                box-shadow: 0 0 15px var(--color-accent-blue);
+                animation: iconPulse 1.5s infinite alternate; /* 图标脉冲动画 */
+            }
+
+            .module-title {
+                font-size: 1.6rem;
+                font-weight: 700;
+                color: var(--color-accent-blue);
+                margin: 0;
+                text-transform: uppercase; /* 大写 */
+                letter-spacing: 1px;
+            }
+
+            /* 模块内容区 */
+            .module-content {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between; /* 内容和结果之间有空间 */
+                background: var(--color-input-bg);
+                border-radius: 8px;
+                border: 1px dashed var(--color-border-light);
+                color: var(--color-text-light);
+                font-size: 0.95rem;
+                padding: 15px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            /* 输入框和按钮容器 */
+            .input-group {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .console-input {
+                flex: 1;
+                padding: 12px 15px;
+                border: 1px solid var(--color-input-border);
+                border-radius: 6px;
+                font-size: 0.9rem;
+                outline: none;
+                background: var(--color-input-bg);
+                color: var(--color-text-light);
+                transition: all 0.3s ease;
+                font-family: 'Roboto Mono', monospace;
+            }
+
+            .console-input::placeholder {
+                color: rgba(224, 224, 224, 0.5);
+            }
+
+            .console-input:focus {
+                border-color: var(--color-accent-blue);
+                box-shadow: 0 0 10px var(--color-accent-blue);
+            }
+
+            .action-button {
+                padding: 12px 20px;
+                background: var(--color-button-bg);
+                color: var(--color-bg-dark);
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                font-weight: 700;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+            }
+
+            .action-button:hover {
+                background: var(--color-button-hover);
+                transform: translateY(-3px);
+                box-shadow: 0 0 15px var(--color-accent-blue);
+            }
+
+            .action-button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            /* 结果显示区 */
+            .result-display {
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid var(--color-border-dark);
+                border-radius: 6px;
+                padding: 15px;
+                margin-top: 10px;
+                max-height: 250px; /* 限制高度 */
+                overflow-y: auto;
+                word-wrap: break-word;
+                flex-grow: 1; /* 填充剩余空间 */
+                display: flex;
+                flex-direction: column;
+            }
+
+            .result-text {
+                white-space: pre-wrap;
+                font-size: 0.9rem;
+                line-height: 1.5;
+                color: var(--color-text-light);
+                font-style: normal;
+            }
+
+            .default-message {
+                color: var(--color-info);
+                font-style: italic;
+                text-align: center;
+                padding: 20px;
+            }
+
+            /* 加载状态 */
+            .loading {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                color: var(--color-accent-blue);
+                font-style: normal;
+                font-weight: 500;
+                padding: 20px;
+            }
+
+            .loading::before {
+                content: '';
+                width: 25px;
+                height: 25px;
+                border: 3px solid rgba(0, 240, 255, 0.3);
+                border-top: 3px solid var(--color-accent-blue);
+                border-radius: 50%;
+                animation: spin 1s linear infinite; /* 加载旋转动画 */
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* 动画效果 */
+            @keyframes fadeInScale {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .console-module {
+                animation: fadeInScale 0.6s ease-out forwards;
+                opacity: 0; /* 初始隐藏 */
+            }
+
+            /* 模块逐个出现动画延迟 */
+            .console-module:nth-child(1) {
+                animation-delay: 0.1s;
+            }
+            .console-module:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+            .console-module:nth-child(3) {
+                animation-delay: 0.3s;
+            }
+            .console-module:nth-child(4) {
+                animation-delay: 0.4s;
+            }
+            .console-module:nth-child(5) {
+                animation-delay: 0.5s;
+            }
+            .console-module:nth-child(6) {
+                animation-delay: 0.6s;
+            }
+            .console-module:nth-child(7) {
+                animation-delay: 0.7s;
+            }
+
+            @keyframes headerGlow {
+                0% {
+                    text-shadow: 0 0 15px var(--color-accent-blue);
+                }
+                100% {
+                    text-shadow: 0 0 25px var(--color-accent-blue),
+                        0 0 35px var(--color-accent-blue);
+                }
+            }
+
+            @keyframes iconPulse {
+                0% {
+                    box-shadow: 0 0 15px var(--color-accent-blue);
+                }
+                50% {
+                    box-shadow: 0 0 25px var(--color-accent-blue),
+                        0 0 35px rgba(0

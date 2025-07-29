@@ -1,0 +1,192 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>战场指挥中心 - 战术情报面板</title>
+    <!-- 引入 Google Fonts，用于科幻/战术风格字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 全局重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* CSS 变量定义，便于主题管理 */
+        :root {
+            --color-dark-bg: #0a0a15; /* 非常深的蓝黑色，作为主背景 */
+            --color-card-bg: rgba(15, 15, 26, 0.85); /* 略浅的半透明卡片背景 */
+            --color-primary-accent: #e94560; /* 警报、活跃状态的红色/洋红色 */
+            --color-secondary-accent: #00e0ff; /* 数据、信息显示的电光蓝 */
+            --color-text-light: #e0e0e0; /* 通用文本的浅灰色 */
+            --color-text-dark: #a0a0a0; /* 标签的深灰色 */
+            --color-border-light: rgba(0, 224, 255, 0.3); /* 浅蓝色边框 */
+            --color-border-dark: rgba(233, 69, 96, 0.3); /* 浅红色边框 */
+            --font-primary: 'Orbitron', sans-serif; /* 主标题和重要文本字体 */
+            --font-mono: 'Roboto Mono', 'Consolas', 'Monaco', monospace; /* 数据和代码字体 */
+            --card-border-radius: 8px; /* 卡片边角半径，更锐利 */
+            --glow-intensity: 0 0 15px rgba(0, 224, 255, 0.6), 0 0 25px rgba(0, 224, 255, 0.4); /* 蓝色发光效果 */
+            --glow-intensity-red: 0 0 15px rgba(233, 69, 96, 0.6), 0 0 25px rgba(233, 69, 96, 0.4); /* 红色发光效果 */
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--color-dark-bg);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--color-text-light);
+            overflow-x: hidden; /* 防止动画引起横向滚动条 */
+            position: relative;
+            /* 背景网格动画 */
+            background-image: radial-gradient(circle at center, rgba(0, 224, 255, 0.05) 1px, transparent 1px),
+                              radial-gradient(circle at center, rgba(233, 69, 96, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px, 80px 80px;
+            background-position: 0 0, 20px 20px;
+            animation: backgroundGrid 60s linear infinite;
+        }
+
+        @keyframes backgroundGrid {
+            from { background-position: 0 0, 20px 20px; }
+            to { background-position: 40px 40px, 100px 100px; }
+        }
+
+        /* 模拟CRT显示器的扫描线效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.3) 50%),
+                        linear-gradient(90deg, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 50%);
+            background-size: 100% 2px, 2px 100%;
+            pointer-events: none; /* 不阻挡鼠标事件 */
+            z-index: -1; /* 确保在内容下方 */
+        }
+
+        .dashboard-container {
+            max-width: 1600px; /* 增加最大宽度，营造更宽广的指挥界面 */
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            border-bottom: 2px solid var(--color-secondary-accent);
+            box-shadow: var(--glow-intensity); /* 头部发光效果 */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: var(--glow-intensity); /* 标题发光效果 */
+            animation: textGlow 2s infinite alternate; /* 标题文字呼吸灯动画 */
+        }
+
+        .dashboard-header p {
+            font-size: 1.5rem;
+            opacity: 0.8;
+            color: var(--color-secondary-accent);
+            text-shadow: 0 0 8px var(--color-secondary-accent);
+        }
+
+        /* 头部标题的故障（Glitch）效果 */
+        .dashboard-header::before, .dashboard-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-dark-bg);
+            opacity: 0;
+            animation: glitchEffect 8s infinite linear;
+            z-index: -1;
+        }
+        .dashboard-header::after {
+            animation-delay: 0.5s;
+            background: var(--color-primary-accent);
+            opacity: 0;
+        }
+
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 10px var(--color-secondary-accent), 0 0 20px var(--color-secondary-accent); }
+            100% { text-shadow: 0 0 15px var(--color-secondary-accent), 0 0 25px var(--color-secondary-accent), 0 0 35px var(--color-secondary-accent); }
+        }
+
+        @keyframes glitchEffect {
+            0% { transform: translate(0); opacity: 0; }
+            2% { transform: translate(-2px, 2px); opacity: 0.1; }
+            4% { transform: translate(2px, -2px); opacity: 0; }
+            6% { transform: translate(-1px, 1px); opacity: 0.15; }
+            8% { transform: translate(1px, -1px); opacity: 0; }
+            10% { transform: translate(0); opacity: 0; }
+            100% { transform: translate(0); opacity: 0; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* 略小的最小宽度，允许更多卡片排列 */
+            gap: 25px; /* 增加卡片间距 */
+            grid-auto-rows: minmax(320px, auto); /* 增加卡片最小高度 */
+        }
+
+        .dashboard-card {
+            background: var(--color-card-bg);
+            border-radius: var(--card-border-radius);
+            padding: 25px;
+            box-shadow: 0 0 10px rgba(0, 224, 255, 0.2); /* 微妙的蓝色发光 */
+            backdrop-filter: blur(5px); /* 较弱的背景模糊 */
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--color-border-light); /* 边框 */
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-8px) scale(1.02); /* 更明显的上浮和放大效果 */
+            box-shadow: var(--glow-intensity); /* 悬停时更强的发光 */
+            border-color: var(--color-secondary-accent);
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px; /* 顶部细线 */
+            background: linear-gradient(90deg, var(--color-secondary-accent), var(--color-primary-accent));
+            border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
+            animation: pulseBorder 2s infinite alternate; /* 顶部边框脉冲动画 */
+        }
+
+        @keyframes pulseBorder {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--color-border-light); /* 虚线边框 */
+        }
+
+        .card-icon {
+            font-size: 2.2rem; /* 增大图标尺寸 */
+            margin-right: 15px;
+            width: 5

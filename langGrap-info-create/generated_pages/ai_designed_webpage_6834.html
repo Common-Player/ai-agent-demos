@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>战术指挥中心 - AI Agent 操作面板</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            /* 全局重置与字体 */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                --color-bg-dark: #0a0a0f;
+                --color-bg-card: rgba(15, 15, 20, 0.85);
+                --color-border-primary: #00ff00; /* Active Green */
+                --color-border-secondary: #00bbf9; /* Info Blue */
+                --color-text-light: #e0e0e0;
+                --color-text-dim: #888;
+                --color-accent-red: #e94560; /* Danger Red */
+                --color-accent-yellow: #ffc947; /* Warning Yellow */
+                --color-accent-purple: #a855f7; /* Research Purple */
+                --color-accent-orange: #f59e0b; /* Calculator Orange */
+                --color-accent-cyan: #06b6d4; /* Time Cyan */
+                --color-accent-lime: #84cc16; /* File Lime */
+                --color-accent-gray: #64748b; /* System Gray */
+                --glow-intensity: 0 0 10px rgba(0, 255, 0, 0.5);
+                --card-border-width: 2px;
+                --card-border-radius: 8px;
+            }
+
+            body {
+                font-family: 'Share Tech Mono', monospace, sans-serif;
+                background: var(--color-bg-dark);
+                min-height: 100vh;
+                padding: 20px;
+                color: var(--color-text-light);
+                overflow-x: hidden; /* Prevent horizontal scroll from animations */
+                position: relative;
+            }
+
+            /* 背景扫描线动画 */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: repeating-linear-gradient(
+                    to bottom,
+                    transparent 0px,
+                    transparent 1px,
+                    rgba(0, 255, 0, 0.05) 1px,
+                    rgba(0, 255, 0, 0.05) 2px
+                );
+                pointer-events: none;
+                z-index: -1;
+                opacity: 0.1;
+            }
+
+            /* 主容器 */
+            .command-center-container {
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: 20px;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* 头部指挥面板 */
+            .command-header {
+                text-align: center;
+                margin-bottom: 40px;
+                color: var(--color-text-light);
+                text-shadow: var(--glow-intensity);
+                animation: fadeIn 1s ease-out;
+            }
+
+            .command-header h1 {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 3.5rem;
+                margin-bottom: 10px;
+                font-weight: 700;
+                letter-spacing: 3px;
+                color: var(--color-border-primary);
+                text-shadow: 0 0 15px var(--color-border-primary);
+            }
+
+            .command-header p {
+                font-size: 1.4rem;
+                opacity: 0.8;
+                letter-spacing: 1px;
+                color: var(--color-border-secondary);
+            }
+
+            /* 网格布局 */
+            .tactical-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 25px;
+                grid-auto-rows: minmax(320px, auto);
+            }
+
+            /* 战术卡片 */
+            .tactical-card {
+                background: var(--color-bg-card);
+                border: var(--card-border-width) solid var(--color-border-primary);
+                border-radius: var(--card-border-radius);
+                padding: 25px;
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.2),
+                    inset 0 0 10px rgba(0, 255, 0, 0.1);
+                backdrop-filter: blur(8px);
+                transition: all 0.3s ease-in-out;
+                position: relative;
+                overflow: hidden;
+                animation: fadeInTerminal 0.8s ease-out forwards;
+            }
+
+            .tactical-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 0 30px rgba(0, 255, 0, 0.4),
+                    inset 0 0 15px rgba(0, 255, 0, 0.2);
+                border-color: var(--color-border-secondary);
+            }
+
+            /* 卡片顶部指示条 */
+            .tactical-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 5px;
+                background: linear-gradient(
+                    90deg,
+                    var(--color-border-primary),
+                    var(--color-border-secondary),
+                    var(--color-accent-red)
+                );
+                border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
+                animation: scanlinePulse 3s infinite alternate;
+            }
+
+            /* 卡片头部 */
+            .card-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+                border-bottom: 1px dashed rgba(0, 255, 0, 0.3);
+                padding-bottom: 15px;
+            }
+
+            .card-icon {
+                font-size: 2.2rem;
+                margin-right: 15px;
+                width: 55px;
+                height: 55px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #00ff00, #00bbf9);
+                border-radius: 50%; /* Circular icons */
+                color: var(--color-bg-dark);
+                box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+                animation: pulseGlow 2s infinite alternate;
+            }
+
+            .card-title {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-border-primary);
+                text-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+                margin: 0;
+                letter-spacing: 1px;
+            }
+
+            /* 卡片内容区 */
+            .card-content {
+                min-height: 200px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 6px;
+                border: 1px solid rgba(0, 255, 0, 0.2);
+                color: var(--color-text-light);
+                font-size: 1rem;
+                padding: 20px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            /* 输入框容器 */
+            .input-container {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            /* 输入框 */
+            .terminal-input {
+                flex: 1;
+                padding: 12px 15px;
+                border: 1px solid var(--color-border-secondary);
+                border-radius: 4px;
+                background: rgba(0, 0, 0, 0.6);
+                color: var(--color-text-light);
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 0.95rem;
+                outline: none;
+                transition: all 0.3s ease;
+                box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.2);
+            }
+
+            .terminal-input::placeholder {
+                color: var(--color-text-dim);
+                opacity: 0.7;
+            }
+
+            .terminal-input:focus {
+                border-color: var(--color-border-primary);
+                box-shadow: inset 0 0 8px var(--color-border-primary),
+                    0 0 10px rgba(0, 255, 0, 0.4);
+            }
+
+            /* 提交按钮 */
+            .action-btn {
+                padding: 12px 25px;
+                background: linear-gradient(135deg, #00ff00, #00bbf9);
+                color: var(--color-bg-dark);
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 0.95rem;
+                font-weight: 700;
+                transition: all 0.2s ease;
+                text-transform: uppercase;
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+            }
+
+            .action-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+                background: linear-gradient(135deg, #00bbf9, #00ff00);
+            }
+
+            .action-btn:active {
+                transform: translateY(0);
+                box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.8);
+            }
+
+            .action-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            /* 自动请求按钮 */
+            .auto-scan-btn {
+                padding: 12px 25px;
+                background: linear-gradient(135deg, #00bbf9, #00ff00);
+                color: var(--color-bg-dark);
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 0.95rem;
+                font-weight: 700;
+                transition: all 0.2s ease;
+                width: 100%;
+                text-transform: uppercase;
+                box-shadow: 0 0 10px rgba(0, 187, 249, 0.4);
+            }
+
+            .auto-scan-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 0 15px rgba(0, 187, 249, 0.6);
+                background: linear-gradient(135deg, #00ff00, #00bbf9);
+            }
+
+            .auto-scan-btn:active {
+                transform: translateY(0);
+                box-shadow: inset 0 0 5px rgba(0, 187, 249, 0.8);
+            }
+
+            .auto-scan-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            /* 结果显示容器 */
+            .result-display-area {
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(0, 255, 0, 0.3);
+                border-radius: 6px;
+                padding: 15px;
+                margin-top: 10px;
+                max-height: 300px;
+                overflow-y: auto;
+                word-wrap: break-word;
+                font-size: 0.9rem;
+                line-height: 1.6;
+                color: var(--color-text-light);
+                position: relative;
+            }
+
+            .result-text {
+                white-space: pre-wrap;
+                font-family: 'Share Tech Mono', monospace;
+                color: var(--color-text-light);
+            }
+
+            /* 加载状态 */
+            .loading-indicator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                color: var(--color-border-primary);
+                font-family: 'Orbitron', sans-serif;
+                font-weight: 500;
+                text-shadow: var(--glow-intensity);
+            }
+
+            .loading-indicator::before {
+                content: '';
+                width: 25px;
+                height: 25px;
+                border: 3px solid rgba(0, 255, 0, 0.3);
+                border-top: 3px solid var(--color-border-primary);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            .default-message {
+                color: var(--color-text-dim);
+                font-style: italic;
+                text-align: center;
+                padding: 20px;
+            }
+
+            /* 特定卡片颜色主题 */
+            .tactical-card[data-module='weather'] .card-icon {
+                background: linear-gradient(135deg, #00bbf9, #3b82f6);
+                box-shadow: 0 0 15px rgba(0, 187, 249, 0.5);
+            }
+            .tactical-card[data-module='news'] .card-icon {
+                background: linear-gradient(135deg, #e94560, #ef4444);
+                box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
+            }
+            .tactical-card[data-module='browser'] .card-icon {
+                background: linear-gradient(135deg, #00ff00, #10b981);
+                box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            }
+            .tactical-card[data-module='research'] .card-icon {
+                background: linear-gradient(135deg, #a855f7, #7c3aed);
+                box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+            }
+            .tactical-card[data-module='calculator'] .card-icon {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+            }
+            .tactical-card[data-module='time'] .card-icon {
+                background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+                box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+            }
+            .tactical-card[data-module='file'] .card-icon {
+                background: linear-gradient(135deg, #84cc16, #65a30d);
+                box-shadow: 0 0 15px rgba(132, 204, 22, 0.5);
+            }
+
+            /* 结构化数据展示样式 */
+            .data-report-section {
+                font-family: 'Share Tech Mono', monospace;
+                color: var(--color-text-light);
+            }
+
+            .report-header {
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px dashed rgba(0, 255, 0, 0.3);
+            }
+
+            .report-header h3 {
+                margin: 0 0 10px 0;
+                color: var(--color-border-primary);
+                font-size: 1.4rem;
+                text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+            }
+
+            .metric-value {
+                font-size: 2.2rem;
+                font-weight: bold;
+                color: var(--color-border-secondary);
+                margin: 10px 0;
+                text-shadow: 0 0 8px rgba(0, 187, 249, 0.5);
+            }
+
+            .info-line {
+                display: flex;
+                justify-content: space-between;
+                margin: 8px 0;
+                padding: 5px 0;
+                border-bottom: 1px dotted rgba(0, 255, 0, 0.1);
+            }
+
+            .info-line:last-child {
+                border-bottom: none;
+            }
+
+            .info-label {
+                font-weight: 600;
+                color: var(--color-text-dim);
+                flex: 0 0 auto;
+                margin-right: 10px;
+            }
+
+            .info-value {
+                color: var(--color-text-light);
+                text-align: right;
+                flex: 1;
+            }
+
+            .sub-section {
+                margin: 15px 0;
+                padding-top: 10px;
+                border-top: 1px dashed rgba(0, 255, 0, 0.1);
+            }
+
+            .sub-section h4 {
+                margin: 0 0 8px 0;
+                color: var(--color-border-primary);
+                font-size: 1.1rem;
+                text-shadow: 0 0 3px rgba(0, 255, 0, 0.2);
+            }
+
+            .sub-section ul,
+            .sub-section ol {
+                margin: 0;
+                padding-left: 20px;
+                list-style-type: square; /* Thematic list style */
+            }
+
+            .sub-section li {
+                margin: 5px 0;
+                line-height: 1.5;
+                color: var(--color-text-light);
+            }
+
+            .data-entry {
+                background: rgba(0, 0, 0, 0.6);
+                padding: 10px 15px;
+                border-radius: 4px;
+                font-family: 'Share Tech Mono', monospace;
+                margin: 5px 0;
+                border: 1px solid rgba(0, 255, 0, 0.2);
+            }
+
+            .data-block {
+                margin: 15px 0;
+            }
+
+            .data-block-item {
+                background: rgba(0, 0, 0, 0.4);
+                padding: 12px;
+                border-radius: 6px;
+                margin: 10px 0;
+                border-left: 3px solid var(--color-border-secondary);
+            }
+
+            .data-block-item h4 {
+                margin: 0 0 8px 0;
+                color: var(--color-border-primary);
+                font-size: 1.1rem;
+            }
+
+            .data-meta {
+                font-size: 0.8rem;
+                color: var(--color-text-dim);
+                margin: 0 0 8px 0;
+            }
+
+            .data-summary {
+                margin: 0;
+                line-height: 1.4;
+            }
+
+            .tag-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin: 10px 0;
+            }
+
+            .tech-tag {
+                background: rgba(0, 187, 249, 0.2);
+                color: var(--color-border-secondary);
+                padding: 5px 10px;
+                border-radius: 15px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border: 1px solid var(--color-border-secondary);
+            }
+
+            .url-path,
+            .file-path {
+                font-size: 0.9rem;
+                color: var(--color-text-dim);
+                font-family: 'Share Tech Mono', monospace;
+                word-break: break-all;
+                margin: 5px 0;
+            }
+
+            .content-preview {
+                background: rgba(0, 0, 0, 0.6);
+                border: 1px solid rgba(0, 255, 0, 0.2);
+                border-radius: 6px;
+                padding: 15px;
+                margin: 10px 0;
+                font-size: 0.85rem;
+                line-height: 1.6;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                color: var(--color-text-light);
+            }
+
+            .format-item {
+                display: flex;
+                justify-content: space-between;
+                margin: 8px 0;
+                padding: 6px 0;
+                border-bottom: 1px dotted rgba(0, 255, 0, 0.1);
+            }
+
+            .format-item:last-child {
+                border-bottom: none;
+            }
+
+            .format-label {
+                font-weight: 600;
+                color: var(--color-text-dim);
+                flex: 0 0 auto;
+                margin-right: 10px;
+            }
+
+            .format-value {
+                color: var(--color-text-light);
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 0.9rem;
+                text-align: right;
+                flex: 1;
+            }
+
+            /* 响应式设计 */
+            @media (max-width: 1200px) {
+                .tactical-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 20px;
+                }
+                .command-header h1 {
+                    font-size: 3rem;
+                }
+                .command-header p {
+                    font-size: 1.2rem;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .tactical-grid {
+                    grid-template-columns: 1fr;
+                    gap: 15px;
+                }
+
+                .command-header h1 {
+                    font-size: 2.5rem;
+                }
+
+                .command-header p {
+                    font-size: 1rem;
+                }
+
+                .tactical-card {
+                    padding: 20px;
+                }
+
+                .card-icon {
+                    font-size: 1.8rem;
+                    width: 45px;
+                    height: 45px;
+                }
+
+                .card-title {
+                    font-size: 1.5rem;
+                }
+
+                body {
+                    padding: 15px;
+                }
+
+                .input-container {
+                    flex-direction: column;
+                }
+
+                .action-btn,
+                .auto-scan-btn {
+                    width: 100%;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .command-header h1 {
+                    font-size: 2rem;
+                }
+
+                .command-header p {
+                    font-size: 0.9rem;
+                }
+
+                .tactical-card {
+                    padding: 15px;
+                }
+
+                .card-content {
+                    min-height: 150px;
+                    font-size: 0.9rem;
+                }
+
+                .terminal-input,
+                .action-btn,
+                .auto-scan-btn {
+                    font-size: 0.85rem;
+                    padding: 10px 15px;
+                }
+            }
+
+            /* 动画效果 */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeInTerminal {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px) scale(0.95);
+                    filter: blur(5px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                    filter: blur(0);
+                }
+            }
+
+            .tactical-card:nth-child(1) {
+                animation-delay: 0.1s;
+            }
+            .tactical-card:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+            .tactical-card:nth-child(3) {
+                animation-delay: 0.3s;
+            }
+            .tactical-card:nth-child(4) {
+                animation-delay: 0.4s;
+            }
+            .tactical-card:nth-child(5) {
+                animation-delay: 0.5s;
+            }
+            .tactical-card:nth-child(6) {
+                animation-delay: 0.6s;
+            }
+            .tactical-card:nth-child(7) {
+                animation-delay: 0.7s;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes scanlinePulse {
+                0% {
+                    background-position: 0% 50%;
+                }
+                100% {
+                    background-position: 100% 50%;
+                }
+            }
+
+            @keyframes pulseGlow {
+                0% {
+                    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+                }
+                50% {
+                    box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
+                }
+                100% {
+                    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+                }
+            }
+
+            /* 滚动条样式 */
+            ::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: rgba(0, 255, 0, 0.05);
+                border-radius: 5px;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: rgba(0, 255, 0, 0.3);
+                border-radius: 5px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 255, 0, 0.5);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="command-center-container">
+            <!-- 指挥中心头部 -->
+            <header class="command-header">
+                <h1><span style="color: var(--color-accent-red)">//</span> 战术指挥中心 <span style="color: var(--color-accent-red)">//</span></h1>
+                <p>OPERATIONAL DASHBOARD - AI AGENT INTERFACE</p>
+            </header>
+
+            <!-- 战术网格布局 -->
+            <main class="tactical-grid">
+                <!-- 战术天气报告 -->
+                <div class="tactical-card" data-module="weather">
+                    <div class="card-header">
+                        <div class="card-icon">📡</div>
+                        <h3 class="card-title">战术天气报告</h3>
+                    </div>
+                    <div class="card-content">
+                        <button class="auto-scan-btn" onclick="getWeatherInfo()">
+                            扫描区域天气
+                        </button>
+                        <div id="weather-result" class="default-message" style="margin-top: 15px;">
+                            点击按钮获取最新天气情报
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 情报简报 -->
+                <div class="tactical-card" data-module="news">
+                    <div class="card-header">
+                        <div class="card-icon">📰</div>
+                        <h3 class="card-title">情报简报</h3>
+                    </div>
+                    <div class="card-content">
+                        <button class="auto-scan-btn" onclick="getNewsInfo()">
+                            获取最新情报
+                        </button>
+                        <div id="news-result" class="default-message" style="margin-top: 15px;">
+                            点击按钮获取全球战况简报
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 侦察终端 -->
+                <div class="tactical-card" data-module="browser">
+                    <div class="card-header">
+                        <div class="card-icon">🌐</div>
+                        <h3 class="card-title">侦察终端</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="input-container">
+                            <input
+                                type="url"
+                                id="url-input"
+                                class="terminal-input"
+                                placeholder="输入目标URL，如：https://www.example.com"
+                                onkeypress="handleUrlKeyPress(event)"
+                            />
+                            <button class="action-btn" onclick="extractContent()">
+                                渗透
+                            </button>
+                        </div>
+                        <div id="browser-result" class="default-message">
+                            输入URL并点击“渗透”或回车
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 战略分析 -->
+                <div class="tactical-card" data-module="research">
+                    <div class="card-header">
+                        <div class="card-icon">🔬</div>
+                        <h3 class="card-title">战略分析</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="input-container">
+                            <input
+                                type="text"
+                                id="research-input"
+                                class="terminal-input"
+                                placeholder="输入分析主题，如：敌方AI战术"
+                                onkeypress="handleResearchKeyPress(event)"
+                            />
+                            <button class="action-btn" onclick="doResearch()">
+                                分析
+                            </button>
+                        </div>
+                        <div id="research-result" class="default-message">
+                            输入主题并点击“分析”或回车
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 后勤计算器 -->
+                <div class="tactical-card" data-module="calculator">
+                    <div class="card-header">
+                        <div class="card-icon">🧮</div>
+                        <h3 class="card-title">后勤计算器</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="input-container">
+                            <input
+                                type="text"
+                                id="calc-input"
+                                class="terminal-input"
+                                placeholder="输入计算指令，如：(100 + 50) * 2"
+                                onkeypress="handleCalcKeyPress(event)"
+                            />
+                            <button class="action-btn" onclick="doCalculate()">
+                                执行
+                            </button>
+                        </div>
+                        <div id="calc-result" class="default-message">
+                            输入指令并点击“执行”或回车
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 任务时钟 -->
+                <div class="tactical-card" data-module="time">
+                    <div class="card-header">
+                        <div class="card-icon">⏰</div>
+                        <h3 class="card-title">任务时钟</h3>
+                    </div>
+                    <div class="card-content">
+                        <button class="auto-scan-btn" onclick="getCurrentTime()">
+                            同步本地时间
+                        </button>
+                        <div id="time-result" class="default-message" style="margin-top: 15px;">
+                            点击按钮同步任务时间
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据档案 -->
+                <div class="tactical-card" data-module="file">
+                    <div class="card-header">
+                        <div class="card-icon">📁</div>
+                        <h3 class="card-title">数据档案</h3>
+                    </div>
+                    <div class="card-content">
+                        <button class="auto-scan-btn" onclick="showFileContent()">
+                            访问指定档案
+                        </button>
+                        <div id="file-result" class="default-message" style="margin-top: 15px;">
+                            点击按钮访问核心档案
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <script>
+            // AI Agent API 配置
+            window.aiAgentAPI = {
+                baseURL: 'http://localhost:8080',
+
+                // 通用API调用函数（带类型验证）
+                async callAPI(endpoint, input, expectedType = null) {
+                    try {
+                        const requestId = `Req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                        console.log(`🌐 [${requestId}] API请求: ${endpoint} with input: ${input}`);
+
+                        const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                input: input,
+                                thread_id: 'dashboard_' + Date.now()
+                            })
+                        });
+                        const data = await response.json();
+
+                        console.log(`📥 [${requestId}] API响应:`, data);
+
+                        if (!data.success) {
+                            console.error(`❌ [${requestId}] API失败:`, data.error);
+                            return '查询失败: ' + (data.error || '未知错误');
+                        }
+
+                        const result = data.response;
+
+                        // 如果指定了期望类型，进行简单验证
+                        if (expectedType && typeof result === 'string') {
+                            try {
+                                const jsonMatch = result.match(/\{[\s\S]*\}/);
+                                if (jsonMatch) {
+                                    const parsedResult = JSON.parse(jsonMatch[0]);
+                                    if (parsedResult.type && parsedResult.type !== expectedType) {
+                                        console.warn(`⚠️ [${requestId}] 类型不匹配警告: 期望 ${expectedType}, 收到 ${parsedResult.type}`);
+                                        // 可以选择这里抛出错误或者记录日志，但暂时先返回结果
+                                    }
+                                }
+                            } catch (parseError) {
+                                // JSON解析失败，可能不是JSON格式，继续处理
+                            }
+                        }
+
+                        console.log(`✅ [${requestId}] API成功返回`);
+                        return result;
+                    } catch (error) {
+                        console.error(`❌ API网络错误:`, error);
+                        return '网络错误: ' + error.message;
+                    }
+                },
+
+                // 各种功能的便捷方法（带类型验证）
+                weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city, 'weather'),
+                news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic, 'news'),
+                extract: (url) => window.aiAgentAPI.callAPI('extract', url, 'extract'),
+                research: (topic) => window.aiAgentAPI.callAPI('research', topic, 'research'),
+                calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr, 'calculate'),
+                datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query, 'datetime'),
+                file: (operation) => window.aiAgentAPI.callAPI('file', operation, 'file')
+            };
+
+            // 显示加载状态
+            function showLoading(elementId) {
+                const element = document.getElementById(elementId);
+                element.innerHTML = '<div class="loading-indicator">正在处理中...</div>';
+            }
+
+            // 区域类型映射
+            const AREA_TYPE_MAP = {
+                'weather-result': 'weather',
+                'news-result': 'news',
+                'browser-result': 'extract',
+                'research-result': 'research',
+                'calc-result': 'calculate',
+                'time-result': 'datetime',
+                'file-result': 'file'
+            };
+
+            // 解析JSON数据并美化展示（带类型验证）
+            function parseAndShowResult(elementId, result) {
+                const element = document.getElementById(elementId);
+                const expectedType = AREA_TYPE_MAP[elementId];
+
+                console.log(`🔍 [${elementId}] 原始数据:`, result);
+
+                try {
+                    // 尝试提取JSON部分（处理可能包含其他文本的情况）
+                    let jsonData = result;
+
+                    // 查找JSON开始和结束位置
+                    const jsonStart = result.indexOf('{');
+                    const jsonEnd = result.lastIndexOf('}');
+
+                    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+                        jsonData = result.substring(jsonStart, jsonEnd + 1);
+                        console.log(`📋 [${elementId}] 提取的JSON:`, jsonData);
+                    }
+
+                    // 尝试解析JSON
+                    const data = JSON.parse(jsonData);
+                    console.log(`✅ [${elementId}] 解析成功:`, data);
+
+                    // 类型验证：检查结果类型是否匹配预期区域
+                    if (data.type && expectedType && data.type !== expectedType) {
+                        console.warn(`⚠️ [${elementId}] 类型不匹配！期望: ${expectedType}, 实际: ${data.type}`);
+                        element.innerHTML = `<div class="result-display-area">
+                            <div class="result-text" style="color: var(--color-accent-red);">
+                                ❌ 数据类型错误<br/>
+                                期望类型: ${expectedType}<br/>
+                                实际类型: ${data.type}<br/>
+                                <details style="margin-top: 10px;">
+                                    <summary>查看原始数据</summary>
+                                    <pre style="background: rgba(0,0,0,0.8); padding: 10px; margin-top: 5px; font-size: 0.8rem; border: 1px solid var(--color-accent-red);">${JSON.stringify(data, null, 2)}</pre>
+                                </details>
+                            </div>
+                        </div>`;
+                        return;
+                    }
+
+                    const formattedHTML = formatJSONData(data);
+                    element.innerHTML = `<div class="result-display-area">${formattedHTML}</div>`;
+                } catch (e) {
+                    console.log(`❌ [${elementId}] JSON解析失败:`, e.message);
+                    // 如果不是JSON，显示原始文本
+                    element.innerHTML = `<div class="result-display-area"><div class="result-text">${result}</div></div>`;
+                }
+            }
+
+            // 格式化JSON数据为HTML
+            function formatJSONData(data) {
+                if (!data || !data.type) {
+                    return `<div class="result-text">${JSON.stringify(data, null, 2)}</div>`;
+                }
+
+                switch (data.type) {
+                    case 'weather':
+                        return formatWeatherData(data);
+                    case 'news':
+                        return formatNewsData(data);
+                    case 'extract':
+                        return formatExtractData(data);
+                    case 'research':
+                        return formatResearchData(data);
+                    case 'calculate':
+                        return formatCalculateData(data);
+                    case 'datetime':
+                        return formatDateTimeData(data);
+                    case 'file':
+                        return formatFileData(data);
+                    default:
+                        return `<div class="result-text">${JSON.stringify(data, null, 2)}</div>`;
+                }
+            }
+
+            // 天气数据格式化
+            function formatWeatherData(data) {
+                const city = data.city || '未知区域';
+                const temp = data.temperature || {};
+                const current = temp.current || 'N/A';
+                const low = temp.low || 'N/A';
+                const high = temp.high || 'N/A';
+                const condition = data.condition || '未知';
+                const humidity = data.humidity || 'N/A';
+                const wind = data.wind || 'N/A';
+                const airQuality = data.airQuality || 'N/A';
+                const suggestions = data.suggestions || [];
+
+                return `
+                    <div class="data-report-section">
+                        <div class="report-header">
+                            <h3>📡 ${city} 区域天气</h3>
+                            <div class="metric-value">${current}</div>
+                        </div>
+                        <div class="weather-info">
+                            <div class="info-line">
+                                <span class="info-label">温度范围:</span>
+                                <span class="info-value">${low} ~ ${high}</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-label">天气状况:</span>
+                                <span class="info-value">${condition}</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-label">湿度:</span>
+                                <span class="info-value">${humidity}</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-label">风力:</span>
+                                <span class="info-value">${wind}</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-label">空气质量:</span>
+                                <span class="info-value">${airQuality}</span>
+                            </div>
+                        </div>
+                        ${suggestions.length > 0 ? `
+                        <div class="sub-section">
+                            <h4>战术建议:</h4>
+                            <ul>
+                                ${suggestions.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                        </div>` : ''}
+                    </div>
+                `;
+            }
+
+            // 新闻数据格式化
+            function formatNewsData(data) {
+                return `
+                    <div class="data-report-section">
+                        <div class="report-header">
+                            <h3>📰 ${data.topic} 情报简报</h3>
+                            <p class="data-summary">${data.summary}</p>
+                        </div>
+                        <div class="data-block">
+                            ${data.articles.map(article => `
+                                <div class="data-block-item">
+                                    <h4>${article.title}</h4>
+                                    <p class="data-meta">${article.source} | ${article.time}</p>
+                                    <p class="data-summary">${article.summary}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="sub-section">
+                            <h4>核心要点:</h4>
+                            <ul>
+                                ${data.keyPoints.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 网页提取数据格式化
+            function formatExtractData(data) {
+                return `
+                    <div class="data-report-section">
+                        <div class="report-header">
+                            <h3>🌐 目标 ${data.title} 侦察报告</h3>
+                            <p class="url-path">${data.url}</p>
+                            <p class="data-summary">${data.description}</p>
+                        </div>
+                        <div class="sub-section">
+                            <h4>主要内容:</h4>
+                            <p>${data.mainContent}</p>
+                        </div>
+                        <div class="sub-section">
+                            <h4>关键特征:</h4>
+                            <ul>
+                                ${data.keyFeatures.map(feature => `<li>${feature}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="sub-section">
+                            <h4>技术识别:</h4>
+                            <div class="tag-list">
+                                ${data.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="sub-section">
+                            <h4>侦察总结:</h4>
+                            <p>${data.summary}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 研究数据格式化
+            function formatResearchData(data) {
+                return `
+                    <div class="data-report-section">
+                        <div class="report-header">
+                            <h3>🔬 ${data.topic} 战略分析报告</h3>
+                            <p class="data-summary">${data.introduction}</p>
+                        </div>
+                        <div class="sub-section">
+                            <h4>核心发现:</h4>
+                            <ul>
+                                ${data.keyFindings.map(finding => `<li>${finding}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="sub-section">
+                            <h4>详细分析:</h4>
+                            <p>${data.detailedAnalysis}</p>
+                        </div>
+                        <div class="sub-section">
+                            <h4>发展趋势:</h4>
+                            <ul>
+                                ${data.trends.map(trend => `<li>${trend}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="sub-section">
+                            <h4>面临挑战:</h4>
+                            <ul>
+                                ${data.challenges.map(challenge => `<li>${challenge}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="sub-section">
+                            <h4>发展机会:</h4>
+                            <ul>
+                                ${data.opportunities.map(opp => `<li>${opp}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="sub-section">
+                            <h4>分析结论:</h4>
+                            <p>${data.conclusion}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 计算数据格式化
+            function formatCalculateData(data) {
+                return `
+                    <div class="data-report-section">
+                        <div class="report-header">
+                            <h3>🧮 后勤计算结果</h3>
+                            <div class="data-entry">${data.expression}</div>
+                            <div class="metric-value">${data.result}</div>
+                        </div>
+                        <div class="sub-section">
+                            <h4>计算步骤:</h4>
+                            <ol>
+                                ${data.steps.map(step => `<li>${step}</li>`).join('')}
+                            </ol>
+                        </div>
+                        <div class="sub-section">
+                            <h4>说明:</h4>
+                            <p>${data.explanation}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 时间数据格式化
+            function formatDateTimeData(data) {
+                return `
+                    <div class="data-report-section">
+                        <div class="report-header">
+                            <h3>⏰ 任务时钟同步</h3>
+                            <div class="metric-value">${data.currentTime}</div>
+                        </div>
+                        <div class="datetime-info">
+                            <div class="info-line">
+                                <span class="info-label">日期:</span>
+                                <span class="info-value">${data.date}</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-label">星期:</span>
+                                <span class="info-value">${data.weekday}</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-label">时区:</span>
+                                <span class="info-value">${data.timezone}</span>
+                            </div>
+                        </div>
+                        <div class="sub-section">
+                            <h4>时间格式:</h4>
+                            <div class="format-item">
+                                <span class="format-label">ISO格式:</span>
+                                <span class="format-value">${data.formats.iso}</span>
+                            </div>
+                            <div class="format-item">
+                                <span class="format-label">可读格式:</span>
+                                <span class="format-value">${data.formats.readable}</span>
+                            </div>
+                            <div class="format-item">
+                                <span class="format-label">时间戳:</span>
+                                <span class="format-value">${data.formats.timestamp}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 文件数据格式化
+            function formatFileData(data) {
+                return `
+                    <div class="data-report-section">
+                        <div class="report-header">
+                            <h3>📁 数据档案操作结果</h3>
+                            <div class="file-path">${data.path}</div>
+                        </div>
+                        <div class="file-info">
+                            <div class="info-line">
+                                <span class="info-label">操作:</span>
+                                <span class="info-value">${data.operation}</span>
+                            </div>
+                            <div class="info-line">
+                                <span class="info-label">结果:</span>
+                                <span class="info-value">${data.result}</span>
+                            </div>
+                            ${data.size ? `
+                            <div class="info-line">
+                                <span class="info-label">大小:</span>
+                                <span class="info-value">${data.size}</span>
+                            </div>` : ''}
+                        </div>
+                        <div class="sub-section">
+                            <h4>内容预览:</h4>
+                            <pre class="content-preview">${data.content}</pre>
+                        </div>
+                        <div class="sub-section">
+                            <h4>详细信息:</h4>
+                            <p>${data.details}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 兼容旧的showResult函数
+            function showResult(elementId, result) {
+                parseAndShowResult(elementId, result);
+            }
+
+            // 天气查询功能
+            async function getWeatherInfo() {
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '扫描中...';
+
+                showLoading('weather-result');
+
+                try {
+                    const result = await window.aiAgentAPI.weather('北京');
+                    showResult('weather-result', result);
+                } catch (error) {
+                    showResult('weather-result', '获取天气情报失败: ' + error.message);
+                }
+
+                btn.disabled = false;
+                btn.textContent = '扫描区域天气';
+            }
+
+            // 新闻查询功能
+            async function getNewsInfo() {
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '获取中...';
+
+                showLoading('news-result');
+
+                try {
+                    const result = await window.aiAgentAPI.news('本日新闻');
+                    showResult('news-result', result);
+                } catch (error) {
+                    showResult('news-result', '获取情报失败: ' + error.message);
+                }
+
+                btn.disabled = false;
+                btn.textContent = '获取最新情报';
+            }
+
+            // 网页内容提取功能
+            async function extractContent() {
+                const urlInput = document.getElementById('url-input');
+                const url = urlInput.value.trim();
+
+                if (!url) {
+                    showResult('browser-result', '请输入有效的目标URL');
+                    return;
+                }
+
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '渗透中...';
+
+                showLoading('browser-result');
+
+                try {
+                    const result = await window.aiAgentAPI.extract(url);
+                    showResult('browser-result', result);
+                } catch (error) {
+                    showResult('browser-result', '目标渗透失败: ' + error.message);
+                }
+
+                btn.disabled = false;
+                btn.textContent = '渗透';
+            }
+
+            // 研究分析功能
+            async function doResearch() {
+                const researchInput = document.getElementById('research-input');
+                const topic = researchInput.value.trim();
+
+                if (!topic) {
+                    showResult('research-result', '请输入分析主题');
+                    return;
+                }
+
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '分析中...';
+
+                showLoading('research-result');
+
+                try {
+                    const result = await window.aiAgentAPI.research(topic);
+                    showResult('research-result', result);
+                } catch (error) {
+                    showResult('research-result', '战略分析失败: ' + error.message);
+                }
+
+                btn.disabled = false;
+                btn.textContent = '分析';
+            }
+
+            // 处理URL输入框回车键
+            function handleUrlKeyPress(event) {
+                if (event.key === 'Enter') {
+                    extractContent();
+                }
+            }
+
+            // 处理研究输入框回车键
+            function handleResearchKeyPress(event) {
+                if (event.key === 'Enter') {
+                    doResearch();
+                }
+            }
+
+            // 数学计算功能
+            async function doCalculate() {
+                const calcInput = document.getElementById('calc-input');
+                const expression = calcInput.value.trim();
+
+                if (!expression) {
+                    showResult('calc-result', '请输入计算指令');
+                    return;
+                }
+
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '执行中...';
+
+                showLoading('calc-result');
+
+                try {
+                    const result = await window.aiAgentAPI.calculate(expression);
+                    showResult('calc-result', result);
+                } catch (error) {
+                    showResult('calc-result', '计算指令执行失败: ' + error.message);
+                }
+
+                btn.disabled = false;
+                btn.textContent = '执行';
+            }
+
+            // 处理计算输入框回车键
+            function handleCalcKeyPress(event) {
+                if (event.key === 'Enter') {
+                    doCalculate();
+                }
+            }
+
+            // 获取当前时间功能
+            async function getCurrentTime() {
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '同步中...';
+
+                showLoading('time-result');
+
+                try {
+                    const result = await window.aiAgentAPI.datetime('current');
+                    showResult('time-result', result);
+                } catch (error) {
+                    showResult('time-result', '任务时钟同步失败: ' + error.message);
+                }
+
+                btn.disabled = false;
+                btn.textContent = '同步本地时间';
+            }
+
+            // 显示文件内容功能
+            async function showFileContent() {
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = '访问中...';
+
+                showLoading('file-result');
+
+                try {
+                    const targetPath = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
+                    const result = await window.aiAgentAPI.file(`read:${targetPath}`);
+                    showResult('file-result', result);
+                } catch (error) {
+                    showResult('file-result', '访问档案失败: ' + error.message);
+                }
+
+                btn.disabled = false;
+                btn.textContent = '访问指定档案';
+            }
+
+            // 页面加载完成后的初始化
+            document.addEventListener('DOMContentLoaded', function () {
+                console.log('🚀 战术指挥中心启动中...');
+
+                // 页面加载后自动请求所有功能
+                console.log('🚀 开始自动加载所有战术模块...');
+
+                // 延迟一秒后开始加载，让页面完全渲染
+                setTimeout(() => {
+                    autoLoadAllFunctions();
+                }, 1000);
+            });
+
+            // 自动加载所有功能（并行请求）
+            async function autoLoadAllFunctions() {
+                console.log('📋 正在并行加载所有战术模块...');
+
+                // 预先设置输入框的默认值
+                document.getElementById('url-input').value = 'https://news.cctv.com/';
+                document.getElementById('research-input').value = 'agent前沿';
+                document.getElementById('calc-input').value = '1+9*20-2';
+
+                // 显示所有加载状态
+                showLoading('weather-result');
+                showLoading('news-result');
+                showLoading('browser-result');
+                showLoading('research-result');
+                showLoading('calc-result');
+                showLoading('time-result');
+                showLoading('file-result');
+
+                console.log('🚀 同时发起所有战术模块请求...');
+
+                // 创建所有异步任务
+                const tasks = [
+                    // 1. 天气查询
+                    {
+                        name: '📡 战术天气报告',
+                        resultId: 'weather-result',
+                        task: () => window.aiAgentAPI.weather('北京')
+                    },
+                    // 2. 今日新闻
+                    {
+                        name: '📰 情报简报',
+                        resultId: 'news-result',
+                        task: () => window.aiAgentAPI.news('今日头条')
+                    },
+                    // 3. 网页内容
+                    {
+                        name: '🌐 侦察终端',
+                        resultId: 'browser-result',
+                        task: () => window.aiAgentAPI.extract('https://news.cctv.com/')
+                    },
+                    // 4. 研究分析
+                    {
+                        name: '🔬 战略分析',
+                        resultId: 'research-result',
+                        task: () => window.aiAgentAPI.research('agent前沿')
+                    },
+                    // 5. 智能计算
+                    {
+                        name: '🧮 后勤计算器',
+                        resultId: 'calc-result',
+                        task: () => window.aiAgentAPI.calculate('1+9*20-2')
+                    },
+                    // 6. 时间信息
+                    {
+                        name: '⏰ 任务时钟',
+                        resultId: 'time-result',
+                        task: () => window.aiAgentAPI.datetime('current')
+                    },
+                    // 7. 文件管理
+                    {
+                        name: '📁 数据档案',
+                        resultId: 'file-result',
+                        task: () => {
+                            const targetPath = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
+                            return window.aiAgentAPI.file(`read:${targetPath}`);
+                        }
+                    }
+                ];
+
+                // 并行执行所有任务（带完整的错误处理和日志）
+                const promises = tasks.map(async (taskInfo, index) => {
+                    const taskId = `Task-${index + 1}`;
+                    try {
+                        console.log(`⚡ [${taskId}] 开始请求: ${taskInfo.name} -> ${taskInfo.resultId}`);
+
+                        // 执行任务
+                        const result = await taskInfo.task();
+
+                        console.log(`📦 [${taskId}] 收到响应: ${taskInfo.name}`, typeof result === 'string' ? result.substring(0, 100) + '...' : result);
+
+                        // 验证结果并显示
+                        if (result && typeof result === 'string') {
+                            console.log(`🎯 [${taskId}] 显示结果到: ${taskInfo.resultId}`);
+                            showResult(taskInfo.resultId, result);
+                            console.log(`✅ [${taskId}] 完成请求: ${taskInfo.name}`);
+                            return { success: true, name: taskInfo.name, taskId: taskId };
+                        } else {
+                            console.warn(`⚠️ [${taskId}] 结果格式异常: ${taskInfo.name}`, result);
+                            showResult(taskInfo.resultId, `${taskInfo.name}返回了异常格式的数据`);
+                            return { success: false, name: taskInfo.name, taskId: taskId, error: '数据格式异常' };
+                        }
+                    } catch (error) {
+                        console.error(`❌ [${taskId}] 请求失败: ${taskInfo.name} - ${error.message}`);
+                        console.error(`❌ [${taskId}] 错误详情:`, error);
+                        showResult(taskInfo.resultId, `${taskInfo.name}加载失败: ${error.message}`);
+                        return { success: false, name: taskInfo.name, taskId: taskId, error: error.message };
+                    }
+                });
+
+                // 等待所有任务完成
+                try {
+                    const results = await Promise.all(promises);
+
+                    // 统计结果
+                    const successCount = results.filter(r => r.success).length;
+                    const failCount = results.filter(r => !r.success).length;
+
+                    console.log(`🎉 所有战术模块并行加载完成！成功: ${successCount}个, 失败: ${failCount}个`);
+
+                    if (failCount > 0) {
+                        console.log('❌ 失败的模块:', results.filter(r => !r.success).map(r => r.name).join(', '));
+                    }
+                } catch (error) {
+                    console.log('❌ 并行加载过程中出现异常:', error.message);
+                }
+            }
+        </script>
+    
+<script>
+// AI网页设计师 - 高级功能集成
+// 检查是否已经存在aiAgentAPI，如果不存在才创建
+if (!window.aiAgentAPI) {
+    window.aiAgentAPI = {
+        baseURL: 'http://localhost:8080',
+        
+        // 通用API调用函数
+        async callAPI(endpoint, input) {
+            try {
+                const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        input: input, 
+                        thread_id: 'ai_webpage_' + Date.now() 
+                    })
+                });
+                const data = await response.json();
+                return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+            } catch (error) {
+                return '网络错误: ' + error.message;
+            }
+        },
+        
+        // 各种功能的便捷方法
+        weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+        news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+        extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+        research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+        calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+        datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+        file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+        system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+    };
+    console.log('🔧 创建了简化版 aiAgentAPI');
+} else {
+    console.log('✅ 检测到已存在完整版 aiAgentAPI，跳过重复创建');
+}
+
+// 智能结果显示函数 - 尝试使用现有的JSON处理逻辑
+function showSmartResult(element, result) {
+    // 检查是否存在完整的JSON处理函数
+    if (typeof window.parseAndShowResult === 'function') {
+        // 为element创建临时ID（如果没有）
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('🎯 使用完整版JSON处理逻辑显示结果');
+        window.parseAndShowResult(element.id, result);
+    } else if (typeof window.showResult === 'function') {
+        // 使用showResult函数
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('📋 使用showResult函数显示结果');
+        window.showResult(element.id, result);
+    } else {
+        // 回退到简单显示
+        console.log('📝 使用简单文本显示结果');
+        element.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+    }
+}
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        
+        // 为输入框阻止事件冒泡，这样点击输入框不会触发AI请求
+        const inputs = element.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.style.cursor = 'text';
+            input.addEventListener('click', function(event) {
+                event.stopPropagation(); // 阻止事件冒泡
+                console.log('📝 输入框可正常编辑');
+            });
+        });
+        
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body, .result-container') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div class="loading">正在处理中...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    const cityInput = this.querySelector('input[type="text"]');
+                    const city = cityInput ? cityInput.value.trim() || '北京' : '北京';
+                    result = await window.aiAgentAPI.weather(city);
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    const topicInput = this.querySelector('input[type="text"]');
+                    const topic = topicInput ? topicInput.value.trim() || '科技新闻' : '科技新闻';
+                    result = await window.aiAgentAPI.news(topic);
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    const urlInput = this.querySelector('input[type="text"], input[type="url"]');
+                    if (urlInput && urlInput.value.trim()) {
+                        result = await window.aiAgentAPI.extract(urlInput.value.trim());
+                    } else {
+                        result = '请在输入框中输入URL，然后点击卡片空白区域触发提取\n示例: https://www.example.com';
+                    }
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    const researchInput = this.querySelector('input[type="text"], textarea');
+                    const topic = researchInput ? researchInput.value.trim() || '人工智能发展趋势' : '人工智能发展趋势';
+                    result = await window.aiAgentAPI.research(topic);
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    const calcInput = this.querySelector('input[type="text"]');
+                    const expr = calcInput ? calcInput.value.trim() || 'sqrt(16) + log(10)' : 'sqrt(16) + log(10)';
+                    result = await window.aiAgentAPI.calculate(expr);
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    const fileInput = this.querySelector('input[type="text"]');
+                    const operation = fileInput ? fileInput.value.trim() || 'list:.' : 'list:.';
+                    result = await window.aiAgentAPI.file(operation);
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n输入框可正常编辑，点击卡片其他区域触发AI请求';
+                }
+                
+                // 使用智能结果显示
+                showSmartResult(loadingElement, result);
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+    console.log('💡 提示：输入框可正常编辑，点击卡片其他区域触发AI请求');
+});
+</script>
+</body>
+</html>
