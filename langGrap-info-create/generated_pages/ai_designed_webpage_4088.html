@@ -1,0 +1,45 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AI Agent Dashboard - 火焰红</title>
+        <style>
+            /* CSS Variables for Flame Red Theme */
+            :root {
+                --flame-red-dark: #660000; /* Deepest red, almost black */
+                --flame-red-medium: #CC0000; /* Standard red */
+                --flame-orange: #FF4500; /* Bright orange-red */
+                --flame-yellow: #FFD700; /* Gold/bright yellow for highlights */
+                --smoke-dark: #1a1a1a; /* Very dark grey for background base */
+                --smoke-medium: #2c2c2c; /* Dark grey for card backgrounds */
+                --smoke-light: #444444; /* Lighter grey for subtle details */
+                --text-primary: #f0f0f0; /* Light text on dark background */
+                --text-secondary: #cccccc; /* Slightly darker light text */
+                --border-color: rgba(255, 69, 0, 0.3); /* Semi-transparent orange-red for borders */
+                --shadow-color: rgba(0, 0, 0, 0.5); /* Dark shadow */
+                --glow-color: rgba(255, 69, 0, 0.7); /* Strong glow color */
+                --gradient-main: linear-gradient(135deg, var(--flame-red-medium), var(--flame-orange));
+                --gradient-accent: linear-gradient(135deg, var(--flame-yellow), var(--flame-orange));
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                    Roboto, 'Microsoft YaHei', sans-serif;
+                background: var(--smoke-dark);
+                min-height: 100vh;
+                padding: 20px;
+                color: var(--text-primary);
+                overflow-x: hidden; /* Prevent horizontal scroll on animations */
+                position: relative; /* For pseudo-element positioning */
+            }
+
+            /* Subtle background animation for flame effect */
+            body::before {

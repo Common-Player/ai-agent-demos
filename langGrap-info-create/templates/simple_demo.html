@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Agent Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .card-content {
+            min-height: 150px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn:hover { background: #0056b3; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .btn-auto {
+            width: 100%;
+            background: #28a745;
+        }
+        
+        .btn-auto:hover { background: #1e7e34; }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #007bff;
+        }
+        
+        .loading::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e3e3e3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .default-text {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .data-display h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .data-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .data-value {
+            color: #333;
+        }
+        
+        .data-list {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        
+        .data-list li {
+            margin: 4px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .input-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Agent Dashboard</h1>
+            <p>智能助手功能演示面板</p>
+        </div>
+
+        <div class="grid">
+            <!-- 天气 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🌤️</div>
+                    <h3 class="card-title">天气查询</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="getWeatherInfo()">获取天气信息</button>
+                    <div id="weather-result" class="default-text result">点击按钮获取天气信息</div>
+                </div>
+            </div>
+
+            <!-- 新闻 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📰</div>
+                    <h3 class="card-title">今日新闻</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="getNewsInfo()">获取今日新闻</button>
+                    <div id="news-result" class="default-text result">点击按钮获取最新新闻</div>
+                </div>
+            </div>
+
+            <!-- 网页浏览 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🌐</div>
+                    <h3 class="card-title">网页内容</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="url" id="url-input" class="input" placeholder="请输入网址" onkeypress="handleKeyPress(event, extractContent)" />
+                        <button class="btn" onclick="extractContent()">提取</button>
+                    </div>
+                    <div id="browser-result" class="default-text result">输入网址并点击提取按钮</div>
+                </div>
+            </div>
+
+            <!-- 研究分析 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔬</div>
+                    <h3 class="card-title">研究分析</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="text" id="research-input" class="input" placeholder="请输入研究主题" onkeypress="handleKeyPress(event, doResearch)" />
+                        <button class="btn" onclick="doResearch()">研究</button>
+                    </div>
+                    <div id="research-result" class="default-text result">输入研究主题并点击研究按钮</div>
+                </div>
+            </div>
+
+            <!-- 计算器 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🧮</div>
+                    <h3 class="card-title">智能计算</h3>
+                </div>
+                <div class="card-content">
+                    <div class="input-group">
+                        <input type="text" id="calc-input" class="input" placeholder="请输入数学表达式" onkeypress="handleKeyPress(event, doCalculate)" />
+                        <button class="btn" onclick="doCalculate()">计算</button>
+                    </div>
+                    <div id="calc-result" class="default-text result">输入数学表达式并点击计算按钮</div>
+                </div>
+            </div>
+
+            <!-- 时间 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⏰</div>
+                    <h3 class="card-title">时间信息</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="getCurrentTime()">获取当前时间</button>
+                    <div id="time-result" class="default-text result">点击按钮获取当前时间信息</div>
+                </div>
+            </div>
+
+            <!-- 文件管理 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📁</div>
+                    <h3 class="card-title">文件管理</h3>
+                </div>
+                <div class="card-content">
+                    <button class="btn btn-auto" onclick="showFileContent()">查看指定目录内容</button>
+                    <div id="file-result" class="default-text result">点击按钮查看目录文件列表</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API = {
+            baseURL: 'http://localhost:8080',
+            
+            async call(endpoint, input) {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            input: input, 
+                            thread_id: 'dashboard_' + Date.now() 
+                        })
+                    });
+                    const data = await response.json();
+                    return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+                } catch (error) {
+                    return '网络错误: ' + error.message;
+                }
+            }
+        };
+
+        // 显示加载状态
+        function showLoading(elementId) {
+            document.getElementById(elementId).innerHTML = '<div class="loading">正在处理中...</div>';
+        }
+
+        // 显示结果
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            
+            try {
+                // 尝试解析JSON
+                const jsonMatch = result.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const data = JSON.parse(jsonMatch[0]);
+                    element.innerHTML = formatData(data);
+                    return;
+                }
+            } catch (e) {
+                // 解析失败，显示原始文本
+            }
+            
+            element.innerHTML = `<div class="result-text">${result}</div>`;
+        }
+
+        // 统一的数据格式化
+        function formatData(data) {
+            if (!data || !data.type) {
+                return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+
+            let html = `<div class="data-display">`;
+            
+            // 标题部分
+            if (data.title || data.topic || data.city) {
+                html += `<h4>${data.title || data.topic || data.city || '结果'}</h4>`;
+            }
+            
+            // 主要信息
+            const mainFields = ['temperature', 'currentTime', 'result', 'summary', 'mainContent'];
+            for (const field of mainFields) {
+                if (data[field]) {
+                    const value = typeof data[field] === 'object' ? 
+                        (data[field].current || JSON.stringify(data[field])) : data[field];
+                    html += `<div style="font-size: 18px; font-weight: bold; margin: 10px 0; color: #007bff;">${value}</div>`;
+                    break;
+                }
+            }
+            
+            // 详细信息
+            const detailFields = {
+                condition: '天气', humidity: '湿度', wind: '风力', airQuality: '空气质量',
+                date: '日期', weekday: '星期', timezone: '时区',
+                expression: '表达式', explanation: '说明',
+                url: '网址', description: '描述'
+            };
+            
+            for (const [key, label] of Object.entries(detailFields)) {
+                if (data[key]) {
+                    html += `<div class="data-row">
+                        <span class="data-label">${label}:</span>
+                        <span class="data-value">${data[key]}</span>
+                    </div>`;
+                }
+            }
+            
+            // 列表信息
+            const listFields = ['suggestions', 'keyPoints', 'keyFeatures', 'technologies', 
+                              'keyFindings', 'trends', 'challenges', 'opportunities', 'steps', 'articles'];
+            
+            for (const field of listFields) {
+                if (data[field] && Array.isArray(data[field]) && data[field].length > 0) {
+                    html += `<h4>${getListTitle(field)}</h4><ul class="data-list">`;
+                    for (const item of data[field]) {
+                        const text = typeof item === 'object' ? 
+                            (item.title || item.summary || JSON.stringify(item)) : item;
+                        html += `<li>${text}</li>`;
+                    }
+                    html += '</ul>';
+                }
+            }
+            
+            // 内容字段
+            if (data.content) {
+                html += `<h4>内容</h4><pre style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px;">${data.content}</pre>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function getListTitle(field) {
+            const titles = {
+                suggestions: '建议', keyPoints: '要点', keyFeatures: '特色', 
+                technologies: '技术', keyFindings: '发现', trends: '趋势',
+                challenges: '挑战', opportunities: '机会', steps: '步骤', articles: '相关文章'
+            };
+            return titles[field] || field;
+        }
+
+        // 通用按钮处理
+        async function handleRequest(endpoint, input, resultId, buttonText) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '处理中...';
+            
+            showLoading(resultId);
+            
+            try {
+                const result = await API.call(endpoint, input);
+                showResult(resultId, result);
+            } catch (error) {
+                showResult(resultId, '请求失败: ' + error.message);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = buttonText;
+        }
+
+        // 各功能函数
+        async function getWeatherInfo() {
+            await handleRequest('weather', '北京', 'weather-result', '获取天气信息');
+        }
+
+        async function getNewsInfo() {
+            await handleRequest('news', '今日头条', 'news-result', '获取今日新闻');
+        }
+
+        async function extractContent() {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) {
+                showResult('browser-result', '请输入有效的网址');
+                return;
+            }
+            await handleRequest('extract', url, 'browser-result', '提取');
+        }
+
+        async function doResearch() {
+            const topic = document.getElementById('research-input').value.trim();
+            if (!topic) {
+                showResult('research-result', '请输入研究主题');
+                return;
+            }
+            await handleRequest('research', topic, 'research-result', '研究');
+        }
+
+        async function doCalculate() {
+            const expression = document.getElementById('calc-input').value.trim();
+            if (!expression) {
+                showResult('calc-result', '请输入数学表达式');
+                return;
+            }
+            await handleRequest('calculate', expression, 'calc-result', '计算');
+        }
+
+        async function getCurrentTime() {
+            await handleRequest('datetime', 'current', 'time-result', '获取当前时间');
+        }
+
+        async function showFileContent() {
+            const targetPath = '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
+            await handleRequest('file', `read:${targetPath}`, 'file-result', '查看指定目录内容');
+        }
+
+        // 回车键处理
+        function handleKeyPress(event, callback) {
+            if (event.key === 'Enter') {
+                callback();
+            }
+        }
+
+        // 页面加载完成后自动请求所有功能
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(autoLoadAll, 1000);
+        });
+
+        async function autoLoadAll() {
+            // 设置默认值
+            document.getElementById('url-input').value = 'https://news.cctv.com/';
+            document.getElementById('research-input').value = 'agent前沿';
+            document.getElementById('calc-input').value = '1+9*20-2';
+            
+            // 显示加载状态
+            ['weather-result', 'news-result', 'browser-result', 'research-result', 
+             'calc-result', 'time-result', 'file-result'].forEach(showLoading);
+            
+            // 并行请求所有功能
+            const tasks = [
+                API.call('weather', '北京').then(r => showResult('weather-result', r)),
+                API.call('news', '今日头条').then(r => showResult('news-result', r)),
+                API.call('extract', 'https://news.cctv.com/').then(r => showResult('browser-result', r)),
+                API.call('research', 'agent前沿').then(r => showResult('research-result', r)),
+                API.call('calculate', '1+9*20-2').then(r => showResult('calc-result', r)),
+                API.call('datetime', 'current').then(r => showResult('time-result', r)),
+                API.call('file', 'read:/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md').then(r => showResult('file-result', r))
+            ];
+            
+            try {
+                await Promise.all(tasks);
+                console.log('✅ 所有功能加载完成');
+            } catch (error) {
+                console.error('❌ 加载过程中出现错误:', error);
+            }
+        }
+    </script>
+</body>
+</html>

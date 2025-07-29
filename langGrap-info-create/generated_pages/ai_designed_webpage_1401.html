@@ -1,0 +1,325 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lightning Core AI - 智能闪电仪表盘</title>
+        <!-- 引入字体：Orbitron 用于标题和重要文本，Roboto Mono 用于代码和数据 -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            /* Reset and Base Styles */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            /* 定义CSS变量，便于主题管理和修改 */
+            :root {
+                --color-dark-bg: #0a0a1a; /* 深色背景 */
+                --color-dark-card: rgba(15, 15, 30, 0.85); /* 卡片背景，半透明 */
+                --color-dark-border: rgba(30, 30, 60, 0.7); /* 深色边框 */
+                --color-electric-blue: #00eaff; /* 电光蓝 */
+                --color-electric-purple: #a020f0; /* 电光紫 */
+                --color-electric-yellow: #ffea00; /* 电光黄 */
+                --color-text-light: #e0e0ff; /* 浅色文本 */
+                --color-text-muted: #a0a0c0; /* 柔和文本 */
+                --gradient-bg: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 100%); /* 背景渐变 */
+                --gradient-card-border: linear-gradient(
+                    90deg,
+                    var(--color-electric-blue),
+                    var(--color-electric-purple),
+                    var(--color-electric-yellow)
+                ); /* 卡片边框渐变 */
+                --shadow-glow: 0 0 15px rgba(0, 234, 255, 0.4),
+                    0 0 30px rgba(160, 32, 240, 0.2); /* 基础发光阴影 */
+                --shadow-card-hover: 0 10px 40px rgba(0, 234, 255, 0.3),
+                    0 10px 60px rgba(160, 32, 240, 0.2); /* 卡片悬停发光阴影 */
+            }
+
+            body {
+                font-family: 'Orbitron', sans-serif, -apple-system,
+                    BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei',
+                    sans-serif;
+                background: var(--gradient-bg);
+                min-height: 100vh;
+                padding: 30px;
+                color: var(--color-text-light);
+                overflow-x: hidden; /* 防止背景动画导致横向滚动 */
+                position: relative;
+            }
+
+            /* 背景闪电效果：使用SVG滤镜和动画模拟闪电脉冲 */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                /* 使用内联SVG作为背景，通过feTurbulence滤镜创建噪声，模拟闪电纹理 */
+                background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><filter id="f1" x="-50%" y="-50%" width="200%" height="200%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise"/><feDiffuseLighting in="noise" lighting-color="%2300eaff" surfaceScale="2"><feDistantLight azimuth="225" elevation="60"/></feDiffuseLighting><feComposite in="SourceGraphic" in2="diffuseLighting" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/></filter></defs><rect width="100%" height="100%" fill="none"/><rect width="100%" height="100%" filter="url(%23f1)" opacity="0.1"/></svg>')
+                    no-repeat center center / cover;
+                opacity: 0.3;
+                animation: lightningPulse 15s infinite alternate;
+                pointer-events: none; /* 允许点击穿透背景 */
+                z-index: -1; /* 确保背景在内容之下 */
+            }
+
+            @keyframes lightningPulse {
+                0% {
+                    opacity: 0.1;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0.4;
+                    transform: scale(1.05);
+                }
+                100% {
+                    opacity: 0.1;
+                    transform: scale(1);
+                }
+            }
+
+            .dashboard-container {
+                max-width: 1600px;
+                margin: 0 auto;
+                position: relative;
+                z-index: 1; /* 确保内容在背景效果之上 */
+            }
+
+            .dashboard-header {
+                text-align: center;
+                margin-bottom: 50px;
+                color: var(--color-text-light);
+                position: relative;
+            }
+
+            .dashboard-header h1 {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 3.5rem;
+                margin-bottom: 15px;
+                font-weight: 700;
+                text-shadow: var(--shadow-glow);
+                letter-spacing: 2px;
+                animation: headerGlow 3s infinite alternate; /* 标题发光动画 */
+            }
+
+            @keyframes headerGlow {
+                0% {
+                    text-shadow: var(--shadow-glow);
+                }
+                100% {
+                    text-shadow: 0 0 20px rgba(0, 234, 255, 0.6),
+                        0 0 40px rgba(160, 32, 240, 0.4);
+                }
+            }
+
+            .dashboard-header p {
+                font-family: 'Roboto Mono', monospace;
+                font-size: 1.3rem;
+                opacity: 0.8;
+                text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+            }
+
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 30px;
+                grid-auto-rows: minmax(320px, auto);
+            }
+
+            .dashboard-card {
+                background: var(--color-dark-card);
+                border-radius: 15px;
+                padding: 30px;
+                box-shadow: var(--shadow-glow);
+                backdrop-filter: blur(8px); /* 磨砂玻璃效果 */
+                transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* 平滑过渡 */
+                position: relative;
+                overflow: hidden;
+                border: 1px solid var(--color-dark-border);
+            }
+
+            .dashboard-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: var(--shadow-card-hover);
+                border-color: var(--color-electric-blue);
+            }
+
+            /* 卡片顶部动态边框效果 */
+            .dashboard-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 5px;
+                background: var(--gradient-card-border);
+                border-radius: 15px 15px 0 0;
+                animation: borderPulse 4s infinite linear; /* 边框颜色脉冲动画 */
+                background-size: 200% 100%; /* 使渐变可以移动 */
+                transform-origin: left;
+            }
+
+            @keyframes borderPulse {
+                0% {
+                    background-position: 0% 50%;
+                }
+                100% {
+                    background-position: 100% 50%;
+                }
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 25px;
+                border-bottom: 2px solid var(--color-dark-border);
+                padding-bottom: 18px;
+            }
+
+            .card-icon {
+                font-size: 2.2rem;
+                margin-right: 20px;
+                width: 60px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(
+                    135deg,
+                    var(--color-electric-blue),
+                    var(--color-electric-purple)
+                );
+                border-radius: 50%; /* 圆形图标 */
+                color: white;
+                box-shadow: 0 0 15px rgba(0, 234, 255, 0.5);
+                transition: transform 0.3s ease;
+            }
+
+            .dashboard-card:hover .card-icon {
+                transform: rotate(10deg) scale(1.1); /* 悬停时图标旋转放大 */
+            }
+
+            .card-title {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-electric-blue);
+                margin: 0;
+                text-shadow: 0 0 8px rgba(0, 234, 255, 0.3);
+            }
+
+            .card-content {
+                min-height: 200px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start; /* 内容顶部对齐 */
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 10px;
+                border: 2px dashed var(--color-dark-border);
+                color: var(--color-text-muted);
+                font-size: 1rem;
+                text-align: center;
+                font-style: italic;
+                padding: 20px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            /* 输入框和按钮样式 */
+            .input-container {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+
+            .card-input {
+                flex: 1;
+                padding: 12px 18px;
+                border: 2px solid var(--color-dark-border);
+                border-radius: 8px;
+                font-size: 1rem;
+                outline: none;
+                background: rgba(0, 0, 0, 0.5);
+                color: var(--color-text-light);
+                transition: all 0.3s ease;
+                font-family: 'Roboto Mono', monospace;
+            }
+
+            .card-input::placeholder {
+                color: var(--color-text-muted);
+                opacity: 0.7;
+            }
+
+            .card-input:focus {
+                border-color: var(--color-electric-blue);
+                box-shadow: 0 0 0 4px rgba(0, 234, 255, 0.2);
+                background: rgba(0, 0, 0, 0.7);
+            }
+
+            .submit-btn,
+            .auto-request-btn {
+                padding: 12px 25px;
+                background: linear-gradient(
+                    135deg,
+                    var(--color-electric-blue),
+                    var(--color-electric-purple)
+                );
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 1rem;
+                font-weight: 700;
+                transition: all 0.3s ease;
+                font-family: 'Orbitron', sans-serif;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                box-shadow: 0 5px 15px rgba(0, 234, 255, 0.2);
+            }
+
+            .submit-btn:hover,
+            .auto-request-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 234, 255, 0.4);
+                background: linear-gradient(
+                    135deg,
+                    var(--color-electric-blue),
+                    var(--color-electric-yellow)
+                ); /* 悬停时更动态的渐变 */
+            }
+
+            .submit-btn:disabled,
+            .auto-request-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            .auto-request-btn {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            /* 结果显示样式 */
+            .result-container {
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid var(--color-dark-border);
+                border-radius: 10px;
+                padding: 18px;
+                margin-top: 15px;
+                max-height: 350px;
+                overflow-y: auto;
+                word-wrap: break-word;
+                color: var(--color-text-light);
+                font-family: 'Roboto Mono', monospace;
+                line-height: 1.6;
+                text-align: left;
+                box-shadow: inset 0 0 10px rgba(0, 234, 255, 0.1); /*

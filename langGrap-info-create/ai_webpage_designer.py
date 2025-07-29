@@ -176,37 +176,67 @@ def generate_advanced_integration_script() -> str:
     return """
 <script>
 // AI网页设计师 - 高级功能集成
-window.aiAgentAPI = {
-    baseURL: 'http://localhost:8080',
-    
-    // 通用API调用函数
-    async callAPI(endpoint, input) {
-        try {
-            const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    input: input, 
-                    thread_id: 'ai_webpage_' + Date.now() 
-                })
-            });
-            const data = await response.json();
-            return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
-        } catch (error) {
-            return '网络错误: ' + error.message;
+// 检查是否已经存在aiAgentAPI，如果不存在才创建
+if (!window.aiAgentAPI) {
+    window.aiAgentAPI = {
+        baseURL: 'http://localhost:8080',
+        
+        // 通用API调用函数
+        async callAPI(endpoint, input) {
+            try {
+                const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        input: input, 
+                        thread_id: 'ai_webpage_' + Date.now() 
+                    })
+                });
+                const data = await response.json();
+                return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+            } catch (error) {
+                return '网络错误: ' + error.message;
+            }
+        },
+        
+        // 各种功能的便捷方法
+        weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+        news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+        extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+        research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+        calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+        datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+        file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+        system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+    };
+    console.log('🔧 创建了简化版 aiAgentAPI');
+} else {
+    console.log('✅ 检测到已存在完整版 aiAgentAPI，跳过重复创建');
+}
+
+// 智能结果显示函数 - 尝试使用现有的JSON处理逻辑
+function showSmartResult(element, result) {
+    // 检查是否存在完整的JSON处理函数
+    if (typeof window.parseAndShowResult === 'function') {
+        // 为element创建临时ID（如果没有）
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
         }
-    },
-    
-    // 各种功能的便捷方法
-    weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
-    news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
-    extract: (url) => window.aiAgentAPI.callAPI('extract', url),
-    research: (topic) => window.aiAgentAPI.callAPI('research', topic),
-    calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
-    datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
-    file: (operation) => window.aiAgentAPI.callAPI('file', operation),
-    system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
-};
+        console.log('🎯 使用完整版JSON处理逻辑显示结果');
+        window.parseAndShowResult(element.id, result);
+    } else if (typeof window.showResult === 'function') {
+        // 使用showResult函数
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('📋 使用showResult函数显示结果');
+        window.showResult(element.id, result);
+    } else {
+        // 回退到简单显示
+        console.log('📝 使用简单文本显示结果');
+        element.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+    }
+}
 
 // 自动为所有功能区域添加点击事件
 document.addEventListener('DOMContentLoaded', function() {
@@ -223,41 +253,67 @@ document.addEventListener('DOMContentLoaded', function() {
         element.setAttribute('data-ai-bound', 'true');
         
         element.style.cursor = 'pointer';
+        
+        // 为输入框阻止事件冒泡，这样点击输入框不会触发AI请求
+        const inputs = element.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.style.cursor = 'text';
+            input.addEventListener('click', function(event) {
+                event.stopPropagation(); // 阻止事件冒泡
+                console.log('📝 输入框可正常编辑');
+            });
+        });
+        
         element.addEventListener('click', async function() {
             // 智能识别功能类型
             const text = this.textContent || this.className || '';
             const classList = Array.from(this.classList).join(' ');
             
             let result = '';
-            let loadingElement = this.querySelector('.card-content, .content, .body') || this;
+            let loadingElement = this.querySelector('.card-content, .content, .body, .result-container') || this;
             
             // 显示加载状态
             const originalContent = loadingElement.innerHTML;
-            loadingElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🤖 AI正在处理...</div>';
+            loadingElement.innerHTML = '<div class="loading">正在处理中...</div>';
             
             try {
                 if (text.includes('天气') || classList.includes('weather')) {
-                    result = await window.aiAgentAPI.weather('北京');
+                    const cityInput = this.querySelector('input[type="text"]');
+                    const city = cityInput ? cityInput.value.trim() || '北京' : '北京';
+                    result = await window.aiAgentAPI.weather(city);
                 } else if (text.includes('新闻') || classList.includes('news')) {
-                    result = await window.aiAgentAPI.news('科技新闻');
+                    const topicInput = this.querySelector('input[type="text"]');
+                    const topic = topicInput ? topicInput.value.trim() || '科技新闻' : '科技新闻';
+                    result = await window.aiAgentAPI.news(topic);
                 } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
-                    result = '请提供URL进行内容提取\\n示例: https://www.example.com';
+                    const urlInput = this.querySelector('input[type="text"], input[type="url"]');
+                    if (urlInput && urlInput.value.trim()) {
+                        result = await window.aiAgentAPI.extract(urlInput.value.trim());
+                    } else {
+                        result = '请在输入框中输入URL，然后点击卡片空白区域触发提取\\n示例: https://www.example.com';
+                    }
                 } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
-                    result = await window.aiAgentAPI.research('人工智能发展趋势');
+                    const researchInput = this.querySelector('input[type="text"], textarea');
+                    const topic = researchInput ? researchInput.value.trim() || '人工智能发展趋势' : '人工智能发展趋势';
+                    result = await window.aiAgentAPI.research(topic);
                 } else if (text.includes('计算') || classList.includes('calculator')) {
-                    result = await window.aiAgentAPI.calculate('sqrt(16) + log(10)');
+                    const calcInput = this.querySelector('input[type="text"]');
+                    const expr = calcInput ? calcInput.value.trim() || 'sqrt(16) + log(10)' : 'sqrt(16) + log(10)';
+                    result = await window.aiAgentAPI.calculate(expr);
                 } else if (text.includes('时间') || classList.includes('time')) {
                     result = await window.aiAgentAPI.datetime('current');
                 } else if (text.includes('文件') || classList.includes('file')) {
-                    result = await window.aiAgentAPI.file('list:.');
+                    const fileInput = this.querySelector('input[type="text"]');
+                    const operation = fileInput ? fileInput.value.trim() || 'list:.' : 'list:.';
+                    result = await window.aiAgentAPI.file(operation);
                 } else if (text.includes('系统') || classList.includes('system')) {
                     result = await window.aiAgentAPI.system('memory');
                 } else {
-                    result = '✨ AI功能区域\\n点击后会调用相应的AI功能\\n这是一个智能识别的演示';
+                    result = '✨ AI功能区域\\n输入框可正常编辑，点击卡片其他区域触发AI请求';
                 }
                 
-                // 显示结果
-                loadingElement.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+                // 使用智能结果显示
+                showSmartResult(loadingElement, result);
                 
             } catch (error) {
                 loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
@@ -266,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+    console.log('💡 提示：输入框可正常编辑，点击卡片其他区域触发AI请求');
 });
 </script>"""
 

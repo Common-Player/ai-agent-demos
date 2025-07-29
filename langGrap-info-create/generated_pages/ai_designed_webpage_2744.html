@@ -3,217 +3,249 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>AI Agent Dashboard - 功能演示</title>
+        <title>AI Agent Dashboard - 阳光黄主题</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
         <style>
+            /* 全局重置 */
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
 
+            /* 基础样式 */
             body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                font-family: 'Noto Sans SC', -apple-system, BlinkMacMacSystemFont, 'Segoe UI',
                     Roboto, 'Microsoft YaHei', sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                /* 温暖的黄色渐变背景 */
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); /* 金色到橙色 */
                 min-height: 100vh;
-                padding: 20px;
-                color: #333;
+                padding: 25px; /* 增加整体内边距 */
+                color: #333; /* 深色文字，确保可读性 */
+                line-height: 1.6;
             }
 
             .dashboard-container {
-                max-width: 1400px;
+                max-width: 1500px; /* 增加最大宽度 */
                 margin: 0 auto;
             }
 
+            /* 头部样式 */
             .dashboard-header {
                 text-align: center;
-                margin-bottom: 30px;
-                color: white;
+                margin-bottom: 40px; /* 增加底部间距 */
+                color: #333; /* 深色文字，与背景形成对比 */
             }
 
             .dashboard-header h1 {
-                font-size: 2.5rem;
-                margin-bottom: 10px;
+                font-size: 3rem; /* 增大标题字号 */
+                margin-bottom: 12px;
                 font-weight: 700;
-                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                text-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* 更柔和的阴影 */
+                animation: headerPulse 3s infinite ease-in-out; /* 头部标题脉冲动画 */
             }
 
             .dashboard-header p {
-                font-size: 1.2rem;
+                font-size: 1.3rem; /* 增大副标题字号 */
                 opacity: 0.9;
-                text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
+            /* 网格布局 */
             .dashboard-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-                gap: 20px;
-                grid-auto-rows: minmax(300px, auto);
+                /* 默认3列布局，最小宽度350px */
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 25px; /* 增加卡片间距 */
+                grid-auto-rows: minmax(320px, auto); /* 统一卡片最小高度 */
             }
 
+            /* 卡片基础样式 */
             .dashboard-card {
-                background: rgba(255, 255, 255, 0.95);
-                border-radius: 20px;
-                padding: 25px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-                backdrop-filter: blur(10px);
-                transition: all 0.3s ease;
+                background: rgba(255, 255, 255, 0.98); /* 接近纯白，更清晰 */
+                border-radius: 25px; /* 更大的圆角 */
+                padding: 30px; /* 增加内边距 */
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); /* 更明显的阴影 */
+                backdrop-filter: blur(8px); /* 保持毛玻璃效果 */
+                transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* 更平滑的过渡 */
                 position: relative;
                 overflow: hidden;
+                border: 1px solid rgba(255, 215, 0, 0.3); /* 细微的黄色边框 */
             }
 
             .dashboard-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+                transform: translateY(-10px) scale(1.01); /* 更明显的上浮和轻微放大 */
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2); /* 更强的阴影 */
             }
 
+            /* 卡片顶部装饰条 */
             .dashboard-card::before {
                 content: '';
                 position: absolute;
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 4px;
+                height: 5px; /* 稍粗的装饰条 */
+                /* 黄色系渐变 */
                 background: linear-gradient(
                     90deg,
-                    #4f46e5,
-                    #7c3aed,
-                    #10b981,
-                    #f59e0b
+                    #FFD700,
+                    #FFC107,
+                    #FFA500,
+                    #FF8C00
                 );
-                border-radius: 20px 20px 0 0;
+                border-radius: 25px 25px 0 0;
             }
 
+            /* 卡片头部 */
             .card-header {
                 display: flex;
                 align-items: center;
-                margin-bottom: 20px;
-                border-bottom: 2px solid #f1f5f9;
-                padding-bottom: 15px;
+                margin-bottom: 25px; /* 增加底部间距 */
+                border-bottom: 2px solid #f0f0f0; /* 浅色分割线 */
+                padding-bottom: 18px;
             }
 
+            /* 卡片图标 */
             .card-icon {
-                font-size: 2rem;
-                margin-right: 15px;
-                width: 50px;
-                height: 50px;
+                font-size: 2.2rem; /* 增大图标字号 */
+                margin-right: 18px;
+                width: 55px; /* 增大图标容器 */
+                height: 55px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                background: linear-gradient(135deg, #4f46e5, #7c3aed);
-                border-radius: 12px;
-                color: white;
-                box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+                /* 黄色系渐变背景 */
+                background: linear-gradient(135deg, #FFD700, #FFA500);
+                border-radius: 15px; /* 保持圆角矩形 */
+                color: #333; /* 深色图标，与背景形成对比 */
+                box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3); /* 黄色系阴影 */
             }
 
+            /* 卡片标题 */
             .card-title {
-                font-size: 1.5rem;
+                font-size: 1.6rem; /* 增大标题字号 */
                 font-weight: 600;
                 color: #1e293b;
                 margin: 0;
             }
 
+            /* 卡片内容区 */
             .card-content {
                 min-height: 200px;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
-                background: #f8fafc;
-                border-radius: 12px;
-                border: 2px dashed #cbd5e1;
+                justify-content: flex-start; /* 内容从顶部开始 */
+                background: #fdfdfd; /* 浅色背景 */
+                border-radius: 15px;
+                border: 2px dashed #ffe082; /* 黄色虚线边框 */
                 color: #64748b;
                 font-size: 1rem;
                 text-align: center;
                 font-style: italic;
                 padding: 20px;
                 position: relative;
+                overflow: hidden; /* 确保内容溢出时隐藏 */
+            }
+
+            /* 输入框容器 */
+            .input-container {
+                display: flex;
+                gap: 12px; /* 增加间距 */
+                margin-bottom: 20px; /* 增加底部间距 */
             }
 
             /* 输入框样式 */
-            .input-container {
-                display: flex;
-                gap: 10px;
-                margin-bottom: 15px;
-            }
-
             .card-input {
                 flex: 1;
-                padding: 10px 15px;
-                border: 2px solid #e2e8f0;
-                border-radius: 8px;
-                font-size: 0.9rem;
+                padding: 12px 18px; /* 增大内边距 */
+                border: 2px solid #ffe082; /* 黄色边框 */
+                border-radius: 10px; /* 增大圆角 */
+                font-size: 1rem;
                 outline: none;
                 transition: all 0.3s ease;
+                background-color: #fff;
+                color: #333;
             }
 
             .card-input:focus {
-                border-color: #4f46e5;
-                box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+                border-color: #FFD700; /* 聚焦时边框变亮黄 */
+                box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.25); /* 黄色光晕 */
             }
 
+            /* 提交按钮 */
             .submit-btn {
-                padding: 10px 20px;
-                background: linear-gradient(135deg, #4f46e5, #7c3aed);
-                color: white;
+                padding: 12px 25px; /* 增大内边距 */
+                background: linear-gradient(135deg, #FFD700, #FFA500); /* 黄色渐变 */
+                color: #333; /* 深色文字 */
                 border: none;
-                border-radius: 8px;
+                border-radius: 10px; /* 增大圆角 */
                 cursor: pointer;
-                font-size: 0.9rem;
-                font-weight: 500;
+                font-size: 1rem;
+                font-weight: 600;
                 transition: all 0.3s ease;
+                box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
             }
 
             .submit-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+                transform: translateY(-3px) scale(1.02); /* 上浮并轻微放大 */
+                box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4); /* 更强的黄色阴影 */
             }
 
             .submit-btn:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
                 transform: none;
+                box-shadow: none;
             }
 
+            /* 自动请求按钮 */
             .auto-request-btn {
-                padding: 10px 20px;
-                background: linear-gradient(135deg, #10b981, #059669);
-                color: white;
+                padding: 12px 25px;
+                background: linear-gradient(135deg, #FFC107, #FF8C00); /* 琥珀色到深橙色渐变 */
+                color: #333;
                 border: none;
-                border-radius: 8px;
+                border-radius: 10px;
                 cursor: pointer;
-                font-size: 0.9rem;
-                font-weight: 500;
+                font-size: 1rem;
+                font-weight: 600;
                 transition: all 0.3s ease;
                 width: 100%;
+                box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2);
             }
 
             .auto-request-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+                transform: translateY(-3px) scale(1.02);
+                box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
             }
 
             .auto-request-btn:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
                 transform: none;
+                box-shadow: none;
             }
 
-            /* 结果显示样式 */
+            /* 结果显示容器 */
             .result-container {
-                background: white;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 15px;
-                margin-top: 10px;
-                max-height: 300px;
+                background: #fff;
+                border: 1px solid #ffe082; /* 黄色边框 */
+                border-radius: 10px;
+                padding: 18px; /* 增大内边距 */
+                margin-top: 15px;
+                max-height: 350px; /* 增加最大高度 */
                 overflow-y: auto;
                 word-wrap: break-word;
+                text-align: left; /* 结果文本左对齐 */
             }
 
             .result-text {
                 white-space: pre-wrap;
-                font-size: 0.9rem;
-                line-height: 1.4;
+                font-size: 0.95rem;
+                line-height: 1.5;
                 color: #333;
                 font-style: normal;
             }
@@ -224,17 +256,17 @@
                 align-items: center;
                 justify-content: center;
                 gap: 10px;
-                color: #4f46e5;
+                color: #FFD700; /* 黄色加载文字 */
                 font-style: normal;
                 font-weight: 500;
             }
 
             .loading::before {
                 content: '';
-                width: 20px;
-                height: 20px;
-                border: 2px solid #e2e8f0;
-                border-top: 2px solid #4f46e5;
+                width: 22px; /* 增大加载图标 */
+                height: 22px;
+                border: 3px solid #f0f0f0;
+                border-top: 3px solid #FFD700; /* 黄色加载动画 */
                 border-radius: 50%;
                 animation: spin 1s linear infinite;
             }
@@ -249,126 +281,65 @@
                 font-style: italic;
             }
 
-            /* 特殊布局样式 */
-            .weather-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(59, 130, 246, 0.1),
-                    rgba(147, 51, 234, 0.1)
-                );
-            }
-
-            .weather-card .card-icon {
-                background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            }
-
-            .news-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(239, 68, 68, 0.1),
-                    rgba(245, 101, 101, 0.1)
-                );
-            }
-
-            .news-card .card-icon {
-                background: linear-gradient(135deg, #ef4444, #f56565);
-            }
-
-            .browser-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(16, 185, 129, 0.1),
-                    rgba(5, 150, 105, 0.1)
-                );
-            }
-
-            .browser-card .card-icon {
-                background: linear-gradient(135deg, #10b981, #059669);
-            }
-
-            .research-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(168, 85, 247, 0.1),
-                    rgba(124, 58, 237, 0.1)
-                );
-            }
-
-            .research-card .card-icon {
-                background: linear-gradient(135deg, #a855f7, #7c3aed);
-            }
-
-            .calculator-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(245, 158, 11, 0.1),
-                    rgba(217, 119, 6, 0.1)
-                );
-            }
-
-            .calculator-card .card-icon {
-                background: linear-gradient(135deg, #f59e0b, #d97706);
-            }
-
-            .time-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(6, 182, 212, 0.1),
-                    rgba(14, 165, 233, 0.1)
-                );
-            }
-
-            .time-card .card-icon {
-                background: linear-gradient(135deg, #06b6d4, #0ea5e9);
-            }
-
-            .file-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(132, 204, 22, 0.1),
-                    rgba(101, 163, 13, 0.1)
-                );
-            }
-
-            .file-card .card-icon {
-                background: linear-gradient(135deg, #84cc16, #65a30d);
-            }
-
-            .system-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(100, 116, 139, 0.1),
-                    rgba(71, 85, 105, 0.1)
-                );
-            }
-
-            .system-card .card-icon {
-                background: linear-gradient(135deg, #64748b, #475569);
-            }
+            /* 特殊卡片图标颜色（黄色系变体） */
+            /* 移除原有的卡片背景渐变，统一使用 dashboard-card 的背景 */
+            .weather-card .card-icon { background: linear-gradient(135deg, #FFD700, #FFA500); } /* 金色到橙色 */
+            .news-card .card-icon { background: linear-gradient(135deg, #FFC107, #FF8C00); } /* 琥珀色到深橙色 */
+            .browser-card .card-icon { background: linear-gradient(135deg, #FFEB3B, #FFD700); } /* 柠檬黄到金色 */
+            .research-card .card-icon { background: linear-gradient(135deg, #FFA500, #FF8C00); } /* 橙色到深橙色 */
+            .calculator-card .card-icon { background: linear-gradient(135deg, #FFD700, #FFC107); } /* 金色到琥珀色 */
+            .time-card .card-icon { background: linear-gradient(135deg, #FFC107, #FFA500); } /* 琥珀色到橙色 */
+            .file-card .card-icon { background: linear-gradient(135deg, #FFEB3B, #FFA500); } /* 柠檬黄到橙色 */
 
             /* 响应式设计 */
+            @media (min-width: 1200px) {
+                /* 在大屏幕上，天气和新闻卡片占据两列 */
+                .weather-card {
+                    grid-column: span 2;
+                }
+                .news-card {
+                    grid-column: span 2;
+                }
+            }
+
+            @media (max-width: 1199px) and (min-width: 769px) {
+                .dashboard-grid {
+                    grid-template-columns: repeat(2, 1fr); /* 中等屏幕2列 */
+                    gap: 20px;
+                }
+                /* 移除大屏幕的span效果 */
+                .weather-card, .news-card {
+                    grid-column: span 1;
+                }
+            }
+
             @media (max-width: 768px) {
                 .dashboard-grid {
-                    grid-template-columns: 1fr;
+                    grid-template-columns: 1fr; /* 小屏幕单列 */
                     gap: 15px;
                 }
 
                 .dashboard-header h1 {
-                    font-size: 2rem;
+                    font-size: 2.2rem;
+                }
+
+                .dashboard-header p {
+                    font-size: 1.1rem;
                 }
 
                 .dashboard-card {
                     padding: 20px;
+                    border-radius: 20px;
                 }
 
                 .card-icon {
-                    font-size: 1.5rem;
-                    width: 40px;
-                    height: 40px;
+                    font-size: 1.8rem;
+                    width: 45px;
+                    height: 45px;
                 }
 
                 .card-title {
-                    font-size: 1.3rem;
+                    font-size: 1.4rem;
                 }
 
                 body {
@@ -377,6 +348,22 @@
 
                 .input-container {
                     flex-direction: column;
+                    gap: 8px;
+                }
+
+                .submit-btn, .auto-request-btn {
+                    padding: 10px 20px;
+                    font-size: 0.95rem;
+                }
+
+                .card-input {
+                    padding: 10px 15px;
+                    font-size: 0.95rem;
+                }
+
+                .result-container {
+                    padding: 15px;
+                    max-height: 250px;
                 }
             }
 
@@ -386,7 +373,7 @@
                 }
 
                 .dashboard-header p {
-                    font-size: 1rem;
+                    font-size: 0.95rem;
                 }
 
                 .dashboard-card {
@@ -403,7 +390,7 @@
             @keyframes fadeInUp {
                 from {
                     opacity: 0;
-                    transform: translateY(30px);
+                    transform: translateY(40px);
                 }
                 to {
                     opacity: 1;
@@ -411,52 +398,42 @@
                 }
             }
 
+            @keyframes headerPulse {
+                0% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.01); opacity: 0.98; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+
             .dashboard-card {
-                animation: fadeInUp 0.6s ease-out;
+                animation: fadeInUp 0.7s ease-out; /* 稍慢的入场动画 */
             }
 
-            .dashboard-card:nth-child(1) {
-                animation-delay: 0.1s;
-            }
-            .dashboard-card:nth-child(2) {
-                animation-delay: 0.2s;
-            }
-            .dashboard-card:nth-child(3) {
-                animation-delay: 0.3s;
-            }
-            .dashboard-card:nth-child(4) {
-                animation-delay: 0.4s;
-            }
-            .dashboard-card:nth-child(5) {
-                animation-delay: 0.5s;
-            }
-            .dashboard-card:nth-child(6) {
-                animation-delay: 0.6s;
-            }
-            .dashboard-card:nth-child(7) {
-                animation-delay: 0.7s;
-            }
-            .dashboard-card:nth-child(8) {
-                animation-delay: 0.8s;
-            }
+            /* 错开动画延迟 */
+            .dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+            .dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+            .dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+            .dashboard-card:nth-child(4) { animation-delay: 0.4s; }
+            .dashboard-card:nth-child(5) { animation-delay: 0.5s; }
+            .dashboard-card:nth-child(6) { animation-delay: 0.6s; }
+            .dashboard-card:nth-child(7) { animation-delay: 0.7s; }
 
-            /* 滚动条样式 */
+            /* 滚动条样式 (黄色系) */
             ::-webkit-scrollbar {
-                width: 8px;
+                width: 10px; /* 稍宽的滚动条 */
             }
 
             ::-webkit-scrollbar-track {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 4px;
+                background: rgba(255, 255, 255, 0.2); /* 浅色背景 */
+                border-radius: 5px;
             }
 
             ::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 4px;
+                background: rgba(255, 215, 0, 0.6); /* 金色半透明 */
+                border-radius: 5px;
             }
 
             ::-webkit-scrollbar-thumb:hover {
-                background: rgba(255, 255, 255, 0.5);
+                background: rgba(255, 215, 0, 0.8); /* 悬停时更亮 */
             }
 
             /* 结构化数据展示样式 */
@@ -467,53 +444,55 @@
 
             .weather-header, .news-header, .extract-header, 
             .research-header, .calculate-header, .datetime-header, .file-header {
-                margin-bottom: 15px;
-                padding-bottom: 10px;
-                border-bottom: 2px solid #f1f5f9;
+                margin-bottom: 18px;
+                padding-bottom: 12px;
+                border-bottom: 2px solid #f5f5f5;
             }
 
             .weather-header h3, .news-header h3, .extract-header h3,
             .research-header h3, .calculate-header h3, .datetime-header h3, .file-header h3 {
                 margin: 0 0 10px 0;
                 color: #1e293b;
-                font-size: 1.2rem;
+                font-size: 1.3rem;
             }
 
             .temperature {
-                font-size: 2rem;
+                font-size: 2.2rem; /* 增大温度字号 */
                 font-weight: bold;
-                color: #3b82f6;
+                color: #FFD700; /* 金色温度 */
                 margin: 10px 0;
             }
 
             .current-time {
-                font-size: 1.5rem;
+                font-size: 1.8rem; /* 增大时间字号 */
                 font-weight: bold;
-                color: #06b6d4;
+                color: #FFA500; /* 橙色时间 */
                 margin: 10px 0;
             }
 
             .expression {
-                background: #f8fafc;
-                padding: 8px 12px;
-                border-radius: 6px;
+                background: #fffaf0; /* 浅米色背景 */
+                padding: 10px 15px;
+                border-radius: 8px;
                 font-family: 'Courier New', monospace;
-                margin: 5px 0;
+                margin: 8px 0;
+                border: 1px solid #ffe082;
             }
 
             .result-value {
-                font-size: 1.5rem;
+                font-size: 1.8rem; /* 增大结果字号 */
                 font-weight: bold;
-                color: #10b981;
+                color: #FFC107; /* 琥珀色结果 */
                 margin: 10px 0;
             }
 
             .info-row {
                 display: flex;
                 justify-content: space-between;
-                margin: 8px 0;
-                padding: 5px 0;
-                border-bottom: 1px solid #f1f5f9;
+                align-items: baseline; /* 底部对齐 */
+                margin: 10px 0;
+                padding: 6px 0;
+                border-bottom: 1px dashed #eee; /* 虚线分割 */
             }
 
             .info-row:last-child {
@@ -524,7 +503,7 @@
                 font-weight: 600;
                 color: #64748b;
                 flex: 0 0 auto;
-                margin-right: 10px;
+                margin-right: 15px;
             }
 
             .value {
@@ -535,107 +514,116 @@
 
             .suggestions, .key-points, .research-findings, 
             .research-trends, .research-challenges, .research-opportunities {
-                margin: 15px 0;
+                margin: 20px 0;
             }
 
             .suggestions h4, .key-points h4, .research-findings h4, 
             .research-trends h4, .research-challenges h4, .research-opportunities h4,
             .calculate-steps h4, .datetime-formats h4, .file-content h4 {
-                margin: 0 0 8px 0;
+                margin: 0 0 10px 0;
                 color: #374151;
-                font-size: 1rem;
+                font-size: 1.1rem;
+                border-left: 4px solid #FFD700; /* 黄色左边框 */
+                padding-left: 10px;
             }
 
             .suggestions ul, .key-points ul, .research-findings ul,
-            .research-trends ul, .research-challenges ul, .research-opportunities ul {
+            .research-trends ul, .research-challenges ul, .research-opportunities ul,
+            .calculate-steps ol {
                 margin: 0;
-                padding-left: 20px;
+                padding-left: 25px;
+                list-style-type: disc; /* 默认圆点 */
+            }
+
+            .calculate-steps ol {
+                list-style-type: decimal; /* 数字列表 */
             }
 
             .suggestions li, .key-points li, .research-findings li,
-            .research-trends li, .research-challenges li, .research-opportunities li {
-                margin: 5px 0;
-                line-height: 1.4;
+            .research-trends li, .research-challenges li, .research-opportunities li,
+            .calculate-steps li {
+                margin: 8px 0;
+                line-height: 1.5;
             }
 
             .articles {
-                margin: 15px 0;
+                margin: 20px 0;
             }
 
             .article {
-                background: #f8fafc;
-                padding: 12px;
-                border-radius: 8px;
-                margin: 10px 0;
-                border-left: 4px solid #3b82f6;
+                background: #fffaf0; /* 浅米色背景 */
+                padding: 15px;
+                border-radius: 10px;
+                margin: 12px 0;
+                border-left: 5px solid #FFC107; /* 琥珀色左边框 */
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             }
 
             .article h4 {
-                margin: 0 0 8px 0;
+                margin: 0 0 10px 0;
                 color: #1e293b;
-                font-size: 1rem;
+                font-size: 1.1rem;
             }
 
             .article-meta {
-                font-size: 0.85rem;
+                font-size: 0.9rem;
                 color: #64748b;
-                margin: 0 0 8px 0;
+                margin: 0 0 10px 0;
             }
 
             .article-summary {
                 margin: 0;
-                line-height: 1.4;
+                line-height: 1.5;
             }
 
             .tech-tags {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 6px;
-                margin: 8px 0;
+                gap: 8px;
+                margin: 10px 0;
             }
 
             .tech-tag {
-                background: #e0f2fe;
-                color: #0369a1;
-                padding: 4px 8px;
-                border-radius: 12px;
-                font-size: 0.8rem;
+                background: #FFFACD; /* 柠檬黄背景 */
+                color: #8B4513; /* 马鞍棕文字 */
+                padding: 6px 12px;
+                border-radius: 15px; /* 更大的圆角 */
+                font-size: 0.85rem;
                 font-weight: 500;
+                border: 1px solid #FFD700; /* 金色边框 */
             }
 
-            .extract-url {
-                font-size: 0.9rem;
+            .extract-url, .file-path {
+                font-size: 0.95rem;
                 color: #64748b;
                 word-break: break-all;
-                margin: 5px 0;
-            }
-
-            .file-path {
-                font-size: 0.9rem;
-                color: #64748b;
+                margin: 8px 0;
                 font-family: 'Courier New', monospace;
-                word-break: break-all;
-                margin: 5px 0;
+                background: #f8f8f8;
+                padding: 5px 10px;
+                border-radius: 5px;
             }
 
             .content-text {
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 6px;
-                padding: 12px;
-                margin: 8px 0;
-                font-size: 0.85rem;
-                line-height: 1.4;
+                background: #fffaf0; /* 浅米色背景 */
+                border: 1px solid #ffe082;
+                border-radius: 8px;
+                padding: 15px;
+                margin: 10px 0;
+                font-size: 0.9rem;
+                line-height: 1.5;
                 overflow-x: auto;
                 white-space: pre-wrap;
+                color: #333;
             }
 
             .format-item {
                 display: flex;
                 justify-content: space-between;
-                margin: 8px 0;
-                padding: 6px 0;
-                border-bottom: 1px solid #f1f5f9;
+                align-items: baseline;
+                margin: 10px 0;
+                padding: 8px 0;
+                border-bottom: 1px dashed #eee;
             }
 
             .format-item:last-child {
@@ -646,25 +634,15 @@
                 font-weight: 600;
                 color: #64748b;
                 flex: 0 0 auto;
-                margin-right: 10px;
+                margin-right: 15px;
             }
 
             .format-value {
                 color: #1e293b;
                 font-family: 'Courier New', monospace;
-                font-size: 0.9rem;
+                font-size: 0.95rem;
                 text-align: right;
                 flex: 1;
-            }
-
-            .calculate-steps ol {
-                margin: 0;
-                padding-left: 20px;
-            }
-
-            .calculate-steps li {
-                margin: 5px 0;
-                line-height: 1.4;
             }
         </style>
     </head>
@@ -672,13 +650,13 @@
         <div class="dashboard-container">
             <!-- Dashboard 头部 -->
             <div class="dashboard-header">
-                <h1>🤖 AI Agent Dashboard</h1>
-                <p>智能助手功能演示面板</p>
+                <h1>☀️ 阳光智能助手</h1>
+                <p>您的个性化AI仪表盘，充满活力与效率！</p>
             </div>
 
             <!-- Dashboard 网格布局 -->
             <div class="dashboard-grid">
-                <!-- 天气区域 -->
+                <!-- 天气查询区域 -->
                 <div class="dashboard-card weather-card">
                     <div class="card-header">
                         <div class="card-icon">🌤️</div>
@@ -813,11 +791,9 @@
                         </button>
                         <div id="file-result" class="default-text" style="margin-top: 15px;">
                             点击按钮查看目录文件列表
-                </div>
+                        </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
 
@@ -1421,7 +1397,7 @@
 
             // 页面加载完成后的初始化
             document.addEventListener('DOMContentLoaded', function () {
-                console.log('🤖 AI Agent Dashboard 初始化完成');
+                console.log('☀️ AI Agent Dashboard 初始化完成');
 
                 // 添加卡片点击效果（保留原有功能）
                 const cards = document.querySelectorAll('.dashboard-card');
@@ -1569,5 +1545,130 @@
                 }
             }
         </script>
-    </body>
+    
+<script>
+// AI网页设计师 - 高级功能集成
+// 检查是否已经存在aiAgentAPI，如果不存在才创建
+if (!window.aiAgentAPI) {
+    window.aiAgentAPI = {
+        baseURL: 'http://localhost:8080',
+        
+        // 通用API调用函数
+        async callAPI(endpoint, input) {
+            try {
+                const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        input: input, 
+                        thread_id: 'ai_webpage_' + Date.now() 
+                    })
+                });
+                const data = await response.json();
+                return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+            } catch (error) {
+                return '网络错误: ' + error.message;
+            }
+        },
+        
+        // 各种功能的便捷方法
+        weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+        news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+        extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+        research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+        calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+        datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+        file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+        system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+    };
+    console.log('🔧 创建了简化版 aiAgentAPI');
+} else {
+    console.log('✅ 检测到已存在完整版 aiAgentAPI，跳过重复创建');
+}
+
+// 智能结果显示函数 - 尝试使用现有的JSON处理逻辑
+function showSmartResult(element, result) {
+    // 检查是否存在完整的JSON处理函数
+    if (typeof window.parseAndShowResult === 'function') {
+        // 为element创建临时ID（如果没有）
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('🎯 使用完整版JSON处理逻辑显示结果');
+        window.parseAndShowResult(element.id, result);
+    } else if (typeof window.showResult === 'function') {
+        // 使用showResult函数
+        if (!element.id) {
+            element.id = 'temp_result_' + Date.now();
+        }
+        console.log('📋 使用showResult函数显示结果');
+        window.showResult(element.id, result);
+    } else {
+        // 回退到简单显示
+        console.log('📝 使用简单文本显示结果');
+        element.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+    }
+}
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🤖 AI正在处理...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    result = await window.aiAgentAPI.weather('北京');
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    result = await window.aiAgentAPI.news('科技新闻');
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    result = '请提供URL进行内容提取\n示例: https://www.example.com';
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    result = await window.aiAgentAPI.research('人工智能发展趋势');
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    result = await window.aiAgentAPI.calculate('sqrt(16) + log(10)');
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    result = await window.aiAgentAPI.file('list:.');
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n点击后会调用相应的AI功能\n这是一个智能识别的演示';
+                }
+                
+                // 使用智能结果显示
+                showSmartResult(loadingElement, result);
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+});
+</script>
+</body>
 </html>

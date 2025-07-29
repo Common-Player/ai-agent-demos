@@ -3,218 +3,369 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>AI Agent Dashboard - 功能演示</title>
+        <title>AI Agent Nexus - 智能控制台</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
         <style>
+            /* 全局重置与基础样式 */
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
 
+            :root {
+                --color-bg-dark: #0a0a1a;
+                --color-bg-light: #1a1a2e;
+                --color-card-bg: rgba(26, 26, 46, 0.7); /* 更深、更透明 */
+                --color-border-glow: rgba(0, 191, 255, 0.3); /* 科技蓝边框 */
+                --color-text-primary: #e0f7fa; /* 亮青色 */
+                --color-text-secondary: #a7d9ed; /* 浅青色 */
+                --color-accent-blue: #00bfff; /* 亮蓝色 */
+                --color-accent-purple: #8a2be2; /* 蓝紫色 */
+                --color-accent-green: #00ff7f; /* 亮绿色 */
+                --color-accent-orange: #ffa500; /* 亮橙色 */
+                --color-input-bg: rgba(255, 255, 255, 0.08);
+                --color-input-border: rgba(0, 191, 255, 0.2);
+                --color-input-focus: #00bfff;
+                --color-button-gradient-start: #00bfff;
+                --color-button-gradient-end: #8a2be2;
+                --color-success: #00ff7f;
+                --color-error: #ff6347;
+                --glow-intensity: 0 0 15px rgba(0, 191, 255, 0.5);
+                --glow-intensity-strong: 0 0 30px rgba(0, 191, 255, 0.8);
+            }
+
             body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                    Roboto, 'Microsoft YaHei', sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                font-family: 'Inter', sans-serif;
+                background: radial-gradient(
+                        circle at top left,
+                        #1a1a2e 0%,
+                        #0a0a1a 70%
+                    )
+                    no-repeat;
                 min-height: 100vh;
-                padding: 20px;
-                color: #333;
+                padding: 30px;
+                color: var(--color-text-primary);
+                overflow-x: hidden;
+                position: relative;
+            }
+
+            /* 背景粒子效果 */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.05)"/></svg>')
+                    repeat;
+                background-size: 10px 10px;
+                opacity: 0.3;
+                pointer-events: none;
+                z-index: -1;
+                animation: subtle-move 60s linear infinite;
+            }
+
+            @keyframes subtle-move {
+                0% {
+                    background-position: 0 0;
+                }
+                100% {
+                    background-position: 100px 100px;
+                }
             }
 
             .dashboard-container {
-                max-width: 1400px;
+                max-width: 1600px;
                 margin: 0 auto;
+                padding: 20px;
             }
 
+            /* 头部设计 */
             .dashboard-header {
                 text-align: center;
-                margin-bottom: 30px;
-                color: white;
+                margin-bottom: 50px;
+                position: relative;
+                z-index: 10;
             }
 
             .dashboard-header h1 {
-                font-size: 2.5rem;
-                margin-bottom: 10px;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 3.5rem;
+                margin-bottom: 15px;
                 font-weight: 700;
-                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                color: var(--color-accent-blue);
+                text-shadow: var(--glow-intensity-strong);
+                letter-spacing: 2px;
+                animation: header-glow 2s infinite alternate;
+            }
+
+            @keyframes header-glow {
+                from {
+                    text-shadow: 0 0 10px var(--color-accent-blue),
+                        0 0 20px var(--color-accent-blue);
+                }
+                to {
+                    text-shadow: 0 0 20px var(--color-accent-blue),
+                        0 0 40px var(--color-accent-blue),
+                        0 0 60px var(--color-accent-purple);
+                }
             }
 
             .dashboard-header p {
-                font-size: 1.2rem;
-                opacity: 0.9;
-                text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+                font-family: 'Roboto Mono', monospace;
+                font-size: 1.3rem;
+                opacity: 0.8;
+                color: var(--color-text-secondary);
+                text-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
             }
 
+            /* 网格布局 */
             .dashboard-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-                gap: 20px;
-                grid-auto-rows: minmax(300px, auto);
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 30px;
+                grid-auto-rows: minmax(320px, auto); /* 调整最小高度 */
+                align-items: stretch; /* 确保卡片高度一致 */
             }
 
+            /* 特殊卡片布局 */
+            .time-card {
+                grid-column: span 2; /* 时间卡片占据两列 */
+                min-height: 380px; /* 确保时间卡片更高 */
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            /* 卡片基础样式 */
             .dashboard-card {
-                background: rgba(255, 255, 255, 0.95);
+                background: var(--color-card-bg);
                 border-radius: 20px;
-                padding: 25px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-                backdrop-filter: blur(10px);
-                transition: all 0.3s ease;
+                padding: 30px;
+                box-shadow: var(--glow-intensity);
+                backdrop-filter: blur(15px) saturate(1.5); /* 更强的毛玻璃效果 */
+                border: 1px solid var(--color-border-glow);
+                transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
                 position: relative;
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
 
             .dashboard-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+                transform: translateY(-10px) scale(1.02);
+                box-shadow: var(--glow-intensity-strong);
+                border-color: var(--color-accent-blue);
             }
 
+            /* 卡片顶部动态边框 */
             .dashboard-card::before {
                 content: '';
                 position: absolute;
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 4px;
+                height: 5px;
                 background: linear-gradient(
                     90deg,
-                    #4f46e5,
-                    #7c3aed,
-                    #10b981,
-                    #f59e0b
+                    var(--color-accent-blue),
+                    var(--color-accent-purple),
+                    var(--color-accent-green),
+                    var(--color-accent-orange)
                 );
                 border-radius: 20px 20px 0 0;
+                animation: border-pulse 3s infinite alternate;
+            }
+
+            @keyframes border-pulse {
+                0% {
+                    background-position: 0% 50%;
+                }
+                100% {
+                    background-position: 100% 50%;
+                }
             }
 
             .card-header {
                 display: flex;
                 align-items: center;
-                margin-bottom: 20px;
-                border-bottom: 2px solid #f1f5f9;
+                margin-bottom: 25px;
                 padding-bottom: 15px;
+                border-bottom: 1px solid rgba(0, 191, 255, 0.1);
             }
 
             .card-icon {
-                font-size: 2rem;
-                margin-right: 15px;
-                width: 50px;
-                height: 50px;
+                font-size: 2.5rem; /* 增大图标 */
+                margin-right: 20px;
+                width: 60px;
+                height: 60px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                background: linear-gradient(135deg, #4f46e5, #7c3aed);
-                border-radius: 12px;
+                background: linear-gradient(
+                    135deg,
+                    var(--color-accent-blue),
+                    var(--color-accent-purple)
+                );
+                border-radius: 15px;
                 color: white;
-                box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+                box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+                transition: all 0.3s ease;
+            }
+
+            .dashboard-card:hover .card-icon {
+                transform: rotate(5deg) scale(1.1);
+                box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
             }
 
             .card-title {
-                font-size: 1.5rem;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 1.8rem;
                 font-weight: 600;
-                color: #1e293b;
+                color: var(--color-text-primary);
+                text-shadow: 0 0 8px rgba(0, 191, 255, 0.4);
                 margin: 0;
             }
 
             .card-content {
-                min-height: 200px;
+                flex-grow: 1;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
-                background: #f8fafc;
-                border-radius: 12px;
-                border: 2px dashed #cbd5e1;
-                color: #64748b;
+                justify-content: flex-start; /* 内容从顶部开始 */
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 15px;
+                border: 1px dashed rgba(0, 191, 255, 0.15);
+                color: var(--color-text-secondary);
                 font-size: 1rem;
                 text-align: center;
                 font-style: italic;
-                padding: 20px;
+                padding: 25px;
                 position: relative;
+                overflow: hidden; /* 确保内容不会溢出 */
             }
 
             /* 输入框样式 */
             .input-container {
                 display: flex;
-                gap: 10px;
-                margin-bottom: 15px;
+                gap: 15px;
+                margin-bottom: 20px;
             }
 
             .card-input {
                 flex: 1;
-                padding: 10px 15px;
-                border: 2px solid #e2e8f0;
-                border-radius: 8px;
-                font-size: 0.9rem;
+                padding: 12px 18px;
+                background: var(--color-input-bg);
+                border: 1px solid var(--color-input-border);
+                border-radius: 10px;
+                font-size: 1rem;
+                color: var(--color-text-primary);
                 outline: none;
                 transition: all 0.3s ease;
+                font-family: 'Roboto Mono', monospace;
+            }
+
+            .card-input::placeholder {
+                color: rgba(255, 255, 255, 0.4);
             }
 
             .card-input:focus {
-                border-color: #4f46e5;
-                box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+                border-color: var(--color-input-focus);
+                box-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
+                background: rgba(0, 191, 255, 0.05);
             }
 
-            .submit-btn {
-                padding: 10px 20px;
-                background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            .submit-btn,
+            .auto-request-btn {
+                padding: 12px 25px;
+                background: linear-gradient(
+                    45deg,
+                    var(--color-button-gradient-start),
+                    var(--color-button-gradient-end)
+                );
                 color: white;
                 border: none;
-                border-radius: 8px;
+                border-radius: 10px;
                 cursor: pointer;
-                font-size: 0.9rem;
-                font-weight: 500;
+                font-size: 1rem;
+                font-weight: 600;
                 transition: all 0.3s ease;
+                text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 5px 15px rgba(0, 191, 255, 0.3);
             }
 
-            .submit-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+            .submit-btn:hover,
+            .auto-request-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 191, 255, 0.5);
             }
 
-            .submit-btn:disabled {
-                opacity: 0.6;
+            .submit-btn:active,
+            .auto-request-btn:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 5px rgba(0, 191, 255, 0.2);
+            }
+
+            .submit-btn:disabled,
+            .auto-request-btn:disabled {
+                opacity: 0.5;
                 cursor: not-allowed;
                 transform: none;
+                box-shadow: none;
             }
 
             .auto-request-btn {
-                padding: 10px 20px;
-                background: linear-gradient(135deg, #10b981, #059669);
-                color: white;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 0.9rem;
-                font-weight: 500;
-                transition: all 0.3s ease;
                 width: 100%;
+                margin-bottom: 15px;
+                background: linear-gradient(
+                    45deg,
+                    var(--color-accent-green),
+                    #008000
+                );
+                box-shadow: 0 5px 15px rgba(0, 255, 127, 0.3);
             }
 
             .auto-request-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-            }
-
-            .auto-request-btn:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-                transform: none;
+                box-shadow: 0 8px 20px rgba(0, 255, 127, 0.5);
             }
 
             /* 结果显示样式 */
             .result-container {
-                background: white;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 15px;
-                margin-top: 10px;
-                max-height: 300px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(0, 191, 255, 0.1);
+                border-radius: 12px;
+                padding: 20px;
+                margin-top: 15px;
+                max-height: 350px; /* 调整最大高度 */
                 overflow-y: auto;
                 word-wrap: break-word;
+                text-align: left;
+                color: var(--color-text-secondary);
+                font-family: 'Roboto Mono', monospace;
+                line-height: 1.6;
+                animation: fadeIn 0.5s ease-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
             .result-text {
                 white-space: pre-wrap;
-                font-size: 0.9rem;
-                line-height: 1.4;
-                color: #333;
+                font-size: 0.95rem;
+                color: var(--color-text-secondary);
                 font-style: normal;
             }
 
@@ -223,297 +374,189 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 10px;
-                color: #4f46e5;
+                gap: 15px;
+                color: var(--color-accent-blue);
                 font-style: normal;
                 font-weight: 500;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 1.1rem;
+                text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
             }
 
             .loading::before {
                 content: '';
-                width: 20px;
-                height: 20px;
-                border: 2px solid #e2e8f0;
-                border-top: 2px solid #4f46e5;
+                width: 25px;
+                height: 25px;
+                border: 3px solid rgba(0, 191, 255, 0.2);
+                border-top: 3px solid var(--color-accent-blue);
                 border-radius: 50%;
                 animation: spin 1s linear infinite;
             }
 
             @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
             }
 
             .default-text {
-                color: #64748b;
+                color: rgba(255, 255, 255, 0.4);
                 font-style: italic;
+                font-family: 'Inter', sans-serif;
             }
 
-            /* 特殊布局样式 */
-            .weather-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(59, 130, 246, 0.1),
-                    rgba(147, 51, 234, 0.1)
-                );
-            }
-
+            /* 特殊卡片颜色主题 */
             .weather-card .card-icon {
                 background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
             }
-
-            .news-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(239, 68, 68, 0.1),
-                    rgba(245, 101, 101, 0.1)
-                );
-            }
-
             .news-card .card-icon {
                 background: linear-gradient(135deg, #ef4444, #f56565);
+                box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
             }
-
-            .browser-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(16, 185, 129, 0.1),
-                    rgba(5, 150, 105, 0.1)
-                );
-            }
-
             .browser-card .card-icon {
                 background: linear-gradient(135deg, #10b981, #059669);
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
             }
-
-            .research-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(168, 85, 247, 0.1),
-                    rgba(124, 58, 237, 0.1)
-                );
-            }
-
             .research-card .card-icon {
                 background: linear-gradient(135deg, #a855f7, #7c3aed);
+                box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
             }
-
-            .calculator-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(245, 158, 11, 0.1),
-                    rgba(217, 119, 6, 0.1)
-                );
-            }
-
             .calculator-card .card-icon {
                 background: linear-gradient(135deg, #f59e0b, #d97706);
+                box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
             }
-
-            .time-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(6, 182, 212, 0.1),
-                    rgba(14, 165, 233, 0.1)
-                );
-            }
-
             .time-card .card-icon {
                 background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+                box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
             }
-
-            .file-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(132, 204, 22, 0.1),
-                    rgba(101, 163, 13, 0.1)
-                );
-            }
-
             .file-card .card-icon {
                 background: linear-gradient(135deg, #84cc16, #65a30d);
-            }
-
-            .system-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(100, 116, 139, 0.1),
-                    rgba(71, 85, 105, 0.1)
-                );
-            }
-
-            .system-card .card-icon {
-                background: linear-gradient(135deg, #64748b, #475569);
-            }
-
-            /* 响应式设计 */
-            @media (max-width: 768px) {
-                .dashboard-grid {
-                    grid-template-columns: 1fr;
-                    gap: 15px;
-                }
-
-                .dashboard-header h1 {
-                    font-size: 2rem;
-                }
-
-                .dashboard-card {
-                    padding: 20px;
-                }
-
-                .card-icon {
-                    font-size: 1.5rem;
-                    width: 40px;
-                    height: 40px;
-                }
-
-                .card-title {
-                    font-size: 1.3rem;
-                }
-
-                body {
-                    padding: 15px;
-                }
-
-                .input-container {
-                    flex-direction: column;
-                }
-            }
-
-            @media (max-width: 480px) {
-                .dashboard-header h1 {
-                    font-size: 1.8rem;
-                }
-
-                .dashboard-header p {
-                    font-size: 1rem;
-                }
-
-                .dashboard-card {
-                    padding: 15px;
-                }
-
-                .card-content {
-                    min-height: 150px;
-                    font-size: 0.9rem;
-                }
-            }
-
-            /* 动画效果 */
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .dashboard-card {
-                animation: fadeInUp 0.6s ease-out;
-            }
-
-            .dashboard-card:nth-child(1) {
-                animation-delay: 0.1s;
-            }
-            .dashboard-card:nth-child(2) {
-                animation-delay: 0.2s;
-            }
-            .dashboard-card:nth-child(3) {
-                animation-delay: 0.3s;
-            }
-            .dashboard-card:nth-child(4) {
-                animation-delay: 0.4s;
-            }
-            .dashboard-card:nth-child(5) {
-                animation-delay: 0.5s;
-            }
-            .dashboard-card:nth-child(6) {
-                animation-delay: 0.6s;
-            }
-            .dashboard-card:nth-child(7) {
-                animation-delay: 0.7s;
-            }
-            .dashboard-card:nth-child(8) {
-                animation-delay: 0.8s;
+                box-shadow: 0 0 15px rgba(132, 204, 22, 0.5);
             }
 
             /* 滚动条样式 */
             ::-webkit-scrollbar {
-                width: 8px;
+                width: 10px;
             }
 
             ::-webkit-scrollbar-track {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 4px;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 5px;
             }
 
             ::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 4px;
+                background: linear-gradient(
+                    180deg,
+                    var(--color-accent-blue),
+                    var(--color-accent-purple)
+                );
+                border-radius: 5px;
+                border: 1px solid rgba(0, 191, 255, 0.3);
             }
 
             ::-webkit-scrollbar-thumb:hover {
-                background: rgba(255, 255, 255, 0.5);
+                background: linear-gradient(
+                    180deg,
+                    var(--color-accent-blue),
+                    var(--color-accent-purple)
+                );
+                box-shadow: 0 0 8px rgba(0, 191, 255, 0.5);
             }
 
             /* 结构化数据展示样式 */
-            .weather-display, .news-display, .extract-display, 
-            .research-display, .calculate-display, .datetime-display, .file-display {
+            .weather-display,
+            .news-display,
+            .extract-display,
+            .research-display,
+            .calculate-display,
+            .datetime-display,
+            .file-display {
                 font-style: normal;
+                color: var(--color-text-secondary);
             }
 
-            .weather-header, .news-header, .extract-header, 
-            .research-header, .calculate-header, .datetime-header, .file-header {
-                margin-bottom: 15px;
-                padding-bottom: 10px;
-                border-bottom: 2px solid #f1f5f9;
+            .weather-header,
+            .news-header,
+            .extract-header,
+            .research-header,
+            .calculate-header,
+            .datetime-header,
+            .file-header {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid rgba(0, 191, 255, 0.1);
             }
 
-            .weather-header h3, .news-header h3, .extract-header h3,
-            .research-header h3, .calculate-header h3, .datetime-header h3, .file-header h3 {
+            .weather-header h3,
+            .news-header h3,
+            .extract-header h3,
+            .research-header h3,
+            .calculate-header h3,
+            .datetime-header h3,
+            .file-header h3 {
                 margin: 0 0 10px 0;
-                color: #1e293b;
-                font-size: 1.2rem;
+                color: var(--color-text-primary);
+                font-size: 1.4rem;
+                font-family: 'Orbitron', sans-serif;
+                text-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
             }
 
             .temperature {
-                font-size: 2rem;
+                font-size: 2.5rem;
                 font-weight: bold;
-                color: #3b82f6;
+                color: var(--color-accent-blue);
                 margin: 10px 0;
+                text-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
             }
 
             .current-time {
-                font-size: 1.5rem;
+                font-family: 'Roboto Mono', monospace;
+                font-size: 2.8rem; /* 增大时间字体 */
                 font-weight: bold;
-                color: #06b6d4;
-                margin: 10px 0;
+                color: var(--color-accent-green);
+                margin: 20px 0;
+                text-shadow: 0 0 15px rgba(0, 255, 127, 0.8);
+                animation: time-pulse 1.5s infinite alternate;
+            }
+
+            @keyframes time-pulse {
+                from {
+                    text-shadow: 0 0 10px rgba(0, 255, 127, 0.5);
+                }
+                to {
+                    text-shadow: 0 0 20px rgba(0, 255, 127, 1),
+                        0 0 30px rgba(0, 255, 127, 0.8);
+                }
             }
 
             .expression {
-                background: #f8fafc;
-                padding: 8px 12px;
-                border-radius: 6px;
-                font-family: 'Courier New', monospace;
-                margin: 5px 0;
+                background: rgba(0, 0, 0, 0.4);
+                padding: 10px 15px;
+                border-radius: 8px;
+                font-family: 'Roboto Mono', monospace;
+                margin: 10px 0;
+                border: 1px solid rgba(0, 191, 255, 0.1);
+                color: var(--color-text-primary);
             }
 
             .result-value {
-                font-size: 1.5rem;
+                font-size: 2rem;
                 font-weight: bold;
-                color: #10b981;
-                margin: 10px 0;
+                color: var(--color-accent-green);
+                margin: 15px 0;
+                text-shadow: 0 0 10px rgba(0, 255, 127, 0.6);
             }
 
             .info-row {
                 display: flex;
                 justify-content: space-between;
-                margin: 8px 0;
-                padding: 5px 0;
-                border-bottom: 1px solid #f1f5f9;
+                margin: 10px 0;
+                padding: 8px 0;
+                border-bottom: 1px dashed rgba(0, 191, 255, 0.08);
             }
 
             .info-row:last-child {
@@ -522,120 +565,140 @@
 
             .label {
                 font-weight: 600;
-                color: #64748b;
+                color: var(--color-text-primary);
                 flex: 0 0 auto;
-                margin-right: 10px;
+                margin-right: 15px;
             }
 
             .value {
-                color: #1e293b;
+                color: var(--color-text-secondary);
                 text-align: right;
                 flex: 1;
             }
 
-            .suggestions, .key-points, .research-findings, 
-            .research-trends, .research-challenges, .research-opportunities {
-                margin: 15px 0;
+            .suggestions,
+            .key-points,
+            .research-findings,
+            .research-trends,
+            .research-challenges,
+            .research-opportunities {
+                margin: 20px 0;
             }
 
-            .suggestions h4, .key-points h4, .research-findings h4, 
-            .research-trends h4, .research-challenges h4, .research-opportunities h4,
-            .calculate-steps h4, .datetime-formats h4, .file-content h4 {
-                margin: 0 0 8px 0;
-                color: #374151;
-                font-size: 1rem;
+            .suggestions h4,
+            .key-points h4,
+            .research-findings h4,
+            .research-trends h4,
+            .research-challenges h4,
+            .research-opportunities h4,
+            .calculate-steps h4,
+            .datetime-formats h4,
+            .file-content h4 {
+                margin: 0 0 10px 0;
+                color: var(--color-accent-blue);
+                font-size: 1.1rem;
+                text-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
             }
 
-            .suggestions ul, .key-points ul, .research-findings ul,
-            .research-trends ul, .research-challenges ul, .research-opportunities ul {
+            .suggestions ul,
+            .key-points ul,
+            .research-findings ul,
+            .research-trends ul,
+            .research-challenges ul,
+            .research-opportunities ul,
+            .calculate-steps ol {
                 margin: 0;
-                padding-left: 20px;
+                padding-left: 25px;
+                list-style-type: '⚡ '; /* 自定义列表符号 */
             }
 
-            .suggestions li, .key-points li, .research-findings li,
-            .research-trends li, .research-challenges li, .research-opportunities li {
-                margin: 5px 0;
-                line-height: 1.4;
+            .suggestions li,
+            .key-points li,
+            .research-findings li,
+            .research-trends li,
+            .research-challenges li,
+            .research-opportunities li,
+            .calculate-steps li {
+                margin: 8px 0;
+                line-height: 1.5;
+                color: var(--color-text-secondary);
             }
 
             .articles {
-                margin: 15px 0;
+                margin: 20px 0;
             }
 
             .article {
-                background: #f8fafc;
-                padding: 12px;
-                border-radius: 8px;
-                margin: 10px 0;
-                border-left: 4px solid #3b82f6;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 15px;
+                border-radius: 10px;
+                margin: 15px 0;
+                border-left: 3px solid var(--color-accent-blue);
+                box-shadow: 0 0 10px rgba(0, 191, 255, 0.1);
             }
 
             .article h4 {
-                margin: 0 0 8px 0;
-                color: #1e293b;
-                font-size: 1rem;
+                margin: 0 0 10px 0;
+                color: var(--color-text-primary);
+                font-size: 1.1rem;
             }
 
             .article-meta {
                 font-size: 0.85rem;
-                color: #64748b;
-                margin: 0 0 8px 0;
+                color: rgba(255, 255, 255, 0.6);
+                margin: 0 0 10px 0;
             }
 
             .article-summary {
                 margin: 0;
-                line-height: 1.4;
+                line-height: 1.5;
             }
 
             .tech-tags {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 6px;
-                margin: 8px 0;
+                gap: 8px;
+                margin: 10px 0;
             }
 
             .tech-tag {
-                background: #e0f2fe;
-                color: #0369a1;
-                padding: 4px 8px;
-                border-radius: 12px;
-                font-size: 0.8rem;
+                background: rgba(0, 191, 255, 0.15);
+                color: var(--color-accent-blue);
+                padding: 6px 12px;
+                border-radius: 15px;
+                font-size: 0.85rem;
                 font-weight: 500;
+                border: 1px solid rgba(0, 191, 255, 0.3);
             }
 
-            .extract-url {
-                font-size: 0.9rem;
-                color: #64748b;
-                word-break: break-all;
-                margin: 5px 0;
-            }
-
+            .extract-url,
             .file-path {
                 font-size: 0.9rem;
-                color: #64748b;
-                font-family: 'Courier New', monospace;
+                color: rgba(255, 255, 255, 0.6);
+                font-family: 'Roboto Mono', monospace;
                 word-break: break-all;
-                margin: 5px 0;
+                margin: 8px 0;
             }
 
             .content-text {
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 6px;
-                padding: 12px;
-                margin: 8px 0;
-                font-size: 0.85rem;
-                line-height: 1.4;
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(0, 191, 255, 0.1);
+                border-radius: 10px;
+                padding: 15px;
+                margin: 10px 0;
+                font-size: 0.9rem;
+                line-height: 1.5;
                 overflow-x: auto;
                 white-space: pre-wrap;
+                color: var(--color-text-primary);
             }
 
             .format-item {
                 display: flex;
                 justify-content: space-between;
-                margin: 8px 0;
-                padding: 6px 0;
-                border-bottom: 1px solid #f1f5f9;
+                margin: 10px 0;
+                padding: 8px 0;
+                border-bottom: 1px dashed rgba(0, 191, 255, 0.08);
             }
 
             .format-item:last-child {
@@ -644,40 +707,131 @@
 
             .format-label {
                 font-weight: 600;
-                color: #64748b;
+                color: var(--color-text-primary);
                 flex: 0 0 auto;
-                margin-right: 10px;
+                margin-right: 15px;
             }
 
             .format-value {
-                color: #1e293b;
-                font-family: 'Courier New', monospace;
+                color: var(--color-text-secondary);
+                font-family: 'Roboto Mono', monospace;
                 font-size: 0.9rem;
                 text-align: right;
                 flex: 1;
             }
 
-            .calculate-steps ol {
-                margin: 0;
-                padding-left: 20px;
+            /* 响应式设计 */
+            @media (max-width: 1200px) {
+                .dashboard-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 25px;
+                }
+                .time-card {
+                    grid-column: span 1; /* 在中等屏幕上时间卡片只占一列 */
+                    min-height: auto;
+                }
             }
 
-            .calculate-steps li {
-                margin: 5px 0;
-                line-height: 1.4;
+            @media (max-width: 768px) {
+                body {
+                    padding: 20px;
+                }
+                .dashboard-header h1 {
+                    font-size: 2.8rem;
+                }
+                .dashboard-header p {
+                    font-size: 1.1rem;
+                }
+                .dashboard-grid {
+                    grid-template-columns: 1fr;
+                    gap: 20px;
+                }
+                .dashboard-card {
+                    padding: 25px;
+                }
+                .card-icon {
+                    font-size: 2rem;
+                    width: 50px;
+                    height: 50px;
+                }
+                .card-title {
+                    font-size: 1.5rem;
+                }
+                .input-container {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .submit-btn,
+                .auto-request-btn {
+                    width: 100%;
+                }
+                .current-time {
+                    font-size: 2.2rem;
+                }
+            }
+
+            @media (max-width: 480px) {
+                body {
+                    padding: 15px;
+                }
+                .dashboard-header h1 {
+                    font-size: 2.2rem;
+                }
+                .dashboard-header p {
+                    font-size: 0.9rem;
+                }
+                .dashboard-card {
+                    padding: 20px;
+                }
+                .card-content {
+                    min-height: 180px;
+                    font-size: 0.9rem;
+                    padding: 15px;
+                }
+                .card-input,
+                .submit-btn,
+                .auto-request-btn {
+                    font-size: 0.9rem;
+                    padding: 10px 15px;
+                }
+                .result-container {
+                    padding: 15px;
+                }
+                .temperature {
+                    font-size: 2rem;
+                }
+                .current-time {
+                    font-size: 1.8rem;
+                }
             }
         </style>
     </head>
     <body>
         <div class="dashboard-container">
             <!-- Dashboard 头部 -->
-            <div class="dashboard-header">
-                <h1>🤖 AI Agent Dashboard</h1>
-                <p>智能助手功能演示面板</p>
-            </div>
+            <header class="dashboard-header">
+                <h1><span style="color: #00bfff;">AI</span> <span style="color: #8a2be2;">NEXUS</span></h1>
+                <p>智能代理控制台 | 实时数据流与任务管理</p>
+            </header>
 
             <!-- Dashboard 网格布局 -->
-            <div class="dashboard-grid">
+            <main class="dashboard-grid">
+                <!-- 当前时间区域 - 突出显示 -->
+                <div class="dashboard-card time-card">
+                    <div class="card-header">
+                        <div class="card-icon">⏰</div>
+                        <h3 class="card-title">系统时间</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="time-result" class="default-text">
+                            点击按钮获取当前时间信息
+                        </div>
+                        <button class="auto-request-btn" onclick="getCurrentTime()">
+                            获取当前时间
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 天气区域 -->
                 <div class="dashboard-card weather-card">
                     <div class="card-header">
@@ -685,12 +839,12 @@
                         <h3 class="card-title">天气查询</h3>
                     </div>
                     <div class="card-content">
+                        <div id="weather-result" class="default-text" style="margin-bottom: 15px;">
+                            点击按钮获取天气信息
+                        </div>
                         <button class="auto-request-btn" onclick="getWeatherInfo()">
                             获取天气信息
                         </button>
-                        <div id="weather-result" class="default-text" style="margin-top: 15px;">
-                            点击按钮获取天气信息
-                        </div>
                     </div>
                 </div>
 
@@ -701,12 +855,12 @@
                         <h3 class="card-title">今日新闻</h3>
                     </div>
                     <div class="card-content">
+                        <div id="news-result" class="default-text" style="margin-bottom: 15px;">
+                            点击按钮获取最新新闻
+                        </div>
                         <button class="auto-request-btn" onclick="getNewsInfo()">
                             获取今日新闻
                         </button>
-                        <div id="news-result" class="default-text" style="margin-top: 15px;">
-                            点击按钮获取最新新闻
-                        </div>
                     </div>
                 </div>
 
@@ -714,7 +868,7 @@
                 <div class="dashboard-card browser-card">
                     <div class="card-header">
                         <div class="card-icon">🌐</div>
-                        <h3 class="card-title">网页内容</h3>
+                        <h3 class="card-title">网页内容提取</h3>
                     </div>
                     <div class="card-content">
                         <div class="input-container">
@@ -724,6 +878,7 @@
                                 class="card-input" 
                                 placeholder="请输入网址，如：https://www.example.com" 
                                 onkeypress="handleUrlKeyPress(event)"
+                                aria-label="输入网址"
                             />
                             <button class="submit-btn" onclick="extractContent()">
                                 提取
@@ -739,7 +894,7 @@
                 <div class="dashboard-card research-card">
                     <div class="card-header">
                         <div class="card-icon">🔬</div>
-                        <h3 class="card-title">研究分析</h3>
+                        <h3 class="card-title">智能研究分析</h3>
                     </div>
                     <div class="card-content">
                         <div class="input-container">
@@ -749,6 +904,7 @@
                                 class="card-input" 
                                 placeholder="请输入研究主题，如：人工智能发展趋势" 
                                 onkeypress="handleResearchKeyPress(event)"
+                                aria-label="输入研究主题"
                             />
                             <button class="submit-btn" onclick="doResearch()">
                                 研究
@@ -774,6 +930,7 @@
                                 class="card-input" 
                                 placeholder="请输入数学表达式，如：sqrt(16) + 2*3" 
                                 onkeypress="handleCalcKeyPress(event)"
+                                aria-label="输入数学表达式"
                             />
                             <button class="submit-btn" onclick="doCalculate()">
                                 计算
@@ -785,22 +942,6 @@
                     </div>
                 </div>
 
-                <!-- 当前时间区域 -->
-                <div class="dashboard-card time-card">
-                    <div class="card-header">
-                        <div class="card-icon">⏰</div>
-                        <h3 class="card-title">时间信息</h3>
-                    </div>
-                    <div class="card-content">
-                        <button class="auto-request-btn" onclick="getCurrentTime()">
-                            获取当前时间
-                        </button>
-                        <div id="time-result" class="default-text" style="margin-top: 15px;">
-                            点击按钮获取当前时间信息
-                        </div>
-                    </div>
-                </div>
-
                 <!-- 文件内容展示区域 -->
                 <div class="dashboard-card file-card">
                     <div class="card-header">
@@ -808,17 +949,15 @@
                         <h3 class="card-title">文件管理</h3>
                     </div>
                     <div class="card-content">
+                        <div id="file-result" class="default-text" style="margin-bottom: 15px;">
+                            点击按钮查看目录文件列表
+                        </div>
                         <button class="auto-request-btn" onclick="showFileContent()">
                             查看指定目录内容
                         </button>
-                        <div id="file-result" class="default-text" style="margin-top: 15px;">
-                            点击按钮查看目录文件列表
-                </div>
                     </div>
                 </div>
-
-
-            </div>
+            </main>
         </div>
 
         <script>
@@ -930,13 +1069,13 @@
                     if (data.type && expectedType && data.type !== expectedType) {
                         console.warn(`⚠️ [${elementId}] 类型不匹配！期望: ${expectedType}, 实际: ${data.type}`);
                         element.innerHTML = `<div class="result-container">
-                            <div class="result-text" style="color: #e74c3c;">
+                            <div class="result-text" style="color: var(--color-error);">
                                 ❌ 数据类型错误<br/>
                                 期望类型: ${expectedType}<br/>
                                 实际类型: ${data.type}<br/>
                                 <details style="margin-top: 10px;">
                                     <summary>查看原始数据</summary>
-                                    <pre style="background: #f8f9fa; padding: 10px; margin-top: 5px; font-size: 0.8rem;">${JSON.stringify(data, null, 2)}</pre>
+                                    <pre style="background: rgba(0,0,0,0.5); padding: 10px; margin-top: 5px; font-size: 0.8rem; color: var(--color-text-secondary);">${JSON.stringify(data, null, 2)}</pre>
                                 </details>
                             </div>
                         </div>`;
@@ -1421,7 +1560,7 @@
 
             // 页面加载完成后的初始化
             document.addEventListener('DOMContentLoaded', function () {
-                console.log('🤖 AI Agent Dashboard 初始化完成');
+                console.log('🤖 AI Agent Nexus 初始化完成');
 
                 // 添加卡片点击效果（保留原有功能）
                 const cards = document.querySelectorAll('.dashboard-card');
@@ -1484,7 +1623,7 @@
                     {
                         name: '📰 今日新闻',
                         resultId: 'news-result',
-                        task: () => window.aiAgentAPI.news('今日头条')
+                        task: () => window.aiAgentAPI.news('本日新闻')
                     },
                     // 3. 网页内容
                     {
@@ -1569,5 +1708,100 @@
                 }
             }
         </script>
-    </body>
+    
+<script>
+// AI网页设计师 - 高级功能集成
+window.aiAgentAPI = {
+    baseURL: 'http://localhost:8080',
+    
+    // 通用API调用函数
+    async callAPI(endpoint, input) {
+        try {
+            const response = await fetch(`${this.baseURL}/api/preset/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    input: input, 
+                    thread_id: 'ai_webpage_' + Date.now() 
+                })
+            });
+            const data = await response.json();
+            return data.success ? data.response : '查询失败: ' + (data.error || '未知错误');
+        } catch (error) {
+            return '网络错误: ' + error.message;
+        }
+    },
+    
+    // 各种功能的便捷方法
+    weather: (city = '北京') => window.aiAgentAPI.callAPI('weather', city),
+    news: (topic = '今日头条') => window.aiAgentAPI.callAPI('news', topic),
+    extract: (url) => window.aiAgentAPI.callAPI('extract', url),
+    research: (topic) => window.aiAgentAPI.callAPI('research', topic),
+    calculate: (expr) => window.aiAgentAPI.callAPI('calculate', expr),
+    datetime: (query = 'current') => window.aiAgentAPI.callAPI('datetime', query),
+    file: (operation) => window.aiAgentAPI.callAPI('file', operation),
+    system: (type = 'all') => window.aiAgentAPI.callAPI('system', type)
+};
+
+// 自动为所有功能区域添加点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 智能识别功能区域
+    const functionalElements = document.querySelectorAll(
+        '[class*="weather"], [class*="news"], [class*="browser"], [class*="research"], ' +
+        '[class*="calculator"], [class*="time"], [class*="file"], [class*="system"], ' +
+        '[data-function], .dashboard-card, .card, .panel, .widget'
+    );
+    
+    functionalElements.forEach(element => {
+        // 避免重复绑定
+        if (element.hasAttribute('data-ai-bound')) return;
+        element.setAttribute('data-ai-bound', 'true');
+        
+        element.style.cursor = 'pointer';
+        element.addEventListener('click', async function() {
+            // 智能识别功能类型
+            const text = this.textContent || this.className || '';
+            const classList = Array.from(this.classList).join(' ');
+            
+            let result = '';
+            let loadingElement = this.querySelector('.card-content, .content, .body') || this;
+            
+            // 显示加载状态
+            const originalContent = loadingElement.innerHTML;
+            loadingElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🤖 AI正在处理...</div>';
+            
+            try {
+                if (text.includes('天气') || classList.includes('weather')) {
+                    result = await window.aiAgentAPI.weather('北京');
+                } else if (text.includes('新闻') || classList.includes('news')) {
+                    result = await window.aiAgentAPI.news('科技新闻');
+                } else if (text.includes('网页') || text.includes('浏览') || classList.includes('browser')) {
+                    result = '请提供URL进行内容提取\n示例: https://www.example.com';
+                } else if (text.includes('研究') || text.includes('分析') || classList.includes('research')) {
+                    result = await window.aiAgentAPI.research('人工智能发展趋势');
+                } else if (text.includes('计算') || classList.includes('calculator')) {
+                    result = await window.aiAgentAPI.calculate('sqrt(16) + log(10)');
+                } else if (text.includes('时间') || classList.includes('time')) {
+                    result = await window.aiAgentAPI.datetime('current');
+                } else if (text.includes('文件') || classList.includes('file')) {
+                    result = await window.aiAgentAPI.file('list:.');
+                } else if (text.includes('系统') || classList.includes('system')) {
+                    result = await window.aiAgentAPI.system('memory');
+                } else {
+                    result = '✨ AI功能区域\n点击后会调用相应的AI功能\n这是一个智能识别的演示';
+                }
+                
+                // 显示结果
+                loadingElement.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.9em; line-height: 1.4; max-height: 300px; overflow-y: auto;">${result}</pre>`;
+                
+            } catch (error) {
+                loadingElement.innerHTML = `<div style="color: #e74c3c;">❌ 错误: ${error.message}</div>`;
+            }
+        });
+    });
+    
+    console.log('🎨 AI网页设计师功能集成完成，找到', functionalElements.length, '个功能区域');
+});
+</script>
+</body>
 </html>

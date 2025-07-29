@@ -3,283 +3,294 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>动物世界探索中心</title>
+        <title>秘境之森：智慧之光</title>
         <link
-            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Merriweather:wght@400;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&display=swap"
             rel="stylesheet"
         />
         <style>
-            /* 通用样式重置 */
+            /* 全局重置与基础样式 */
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
 
-            /* 基础布局与主题色 */
-            body {
-                font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont,
-                    'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
-                background: linear-gradient(
-                        135deg,
-                        rgba(100, 170, 100, 0.8),
-                        rgba(50, 120, 50, 0.8)
-                    ),
-                    url('https://images.unsplash.com/photo-1501854140803-b92197f964d2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')
-                        no-repeat center center fixed;
-                background-size: cover;
-                min-height: 100vh;
-                padding: 20px;
-                color: #333;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
+            :root {
+                --color-dark-forest: #1a2a2a;
+                --color-deep-moss: #2e4a3a;
+                --color-mystic-purple: #4b0082;
+                --color-enchanted-blue: #2c3e50;
+                --color-glowing-light: #e0f2f7;
+                --color-soft-glow: rgba(173, 216, 230, 0.8);
+                --color-card-bg: rgba(0, 0, 0, 0.6);
+                --color-card-border: rgba(255, 255, 255, 0.1);
+                --color-input-bg: rgba(0, 0, 0, 0.3);
+                --color-input-border: rgba(255, 255, 255, 0.3);
+                --color-text-light: #e0f2f7;
+                --color-text-muted: #b0c4de;
+                --color-result-bg: rgba(0, 0, 0, 0.2);
             }
 
-            /* 容器 */
-            .animal-world-container {
+            body {
+                font-family: 'Merriweather', serif, -apple-system,
+                    BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei',
+                    sans-serif;
+                background: var(--color-dark-forest);
+                min-height: 100vh;
+                padding: 30px;
+                color: var(--color-text-light);
+                overflow-x: hidden; /* Prevent horizontal scroll from fireflies */
+                position: relative;
+                background-image: url('https://images.unsplash.com/photo-1518005020951-eccb494c7c81?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Dark forest image */
+                background-size: cover;
+                background-position: center center;
+                background-attachment: fixed;
+                background-blend-mode: multiply; /* Blend with dark forest color */
+                filter: saturate(0.8) brightness(0.8); /* Slightly desaturate and darken */
+            }
+
+            /* 魔法迷雾效果 */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(
+                    circle at 50% 50%,
+                    rgba(0, 0, 0, 0) 0%,
+                    rgba(0, 0, 0, 0.3) 50%,
+                    rgba(0, 0, 0, 0.7) 100%
+                );
+                pointer-events: none;
+                z-index: -1;
+            }
+
+            .dashboard-container {
                 max-width: 1500px;
                 margin: 0 auto;
-                width: 100%;
-            }
-
-            /* 头部设计 */
-            .animal-world-header {
-                text-align: center;
-                margin-bottom: 40px;
-                color: white;
-                padding: 30px 20px;
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 25px;
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-                backdrop-filter: blur(5px);
                 position: relative;
-                overflow: hidden;
+                z-index: 1; /* Ensure content is above background effects */
             }
 
-            .animal-world-header::before {
-                content: '';
-                position: absolute;
-                top: -50%;
-                left: -50%;
-                width: 200%;
-                height: 200%;
-                background: radial-gradient(
-                    circle at center,
-                    rgba(255, 255, 255, 0.1) 0%,
-                    transparent 70%
-                );
-                animation: header-pulse 10s infinite alternate;
+            .dashboard-header {
+                text-align: center;
+                margin-bottom: 50px;
+                color: var(--color-glowing-light);
+                position: relative;
+                z-index: 2;
             }
 
-            @keyframes header-pulse {
-                0% {
-                    transform: scale(1);
-                    opacity: 0.5;
-                }
-                100% {
-                    transform: scale(1.1);
-                    opacity: 0.7;
-                }
-            }
-
-            .animal-world-header h1 {
-                font-family: 'Merriweather', serif;
+            .dashboard-header h1 {
+                font-family: 'Playfair Display', serif;
                 font-size: 3.5rem;
                 margin-bottom: 15px;
                 font-weight: 700;
-                text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+                text-shadow: 0 0 20px var(--color-soft-glow),
+                    0 0 30px var(--color-mystic-purple);
                 letter-spacing: 2px;
-                position: relative;
-                z-index: 1;
+                animation: headerGlow 3s infinite alternate;
             }
 
-            .animal-world-header p {
-                font-size: 1.5rem;
+            .dashboard-header p {
+                font-size: 1.4rem;
                 opacity: 0.9;
-                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-                position: relative;
-                z-index: 1;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+                font-style: italic;
             }
 
-            /* 网格布局 */
-            .animal-world-grid {
+            @keyframes headerGlow {
+                from {
+                    text-shadow: 0 0 20px var(--color-soft-glow),
+                        0 0 30px var(--color-mystic-purple);
+                }
+                to {
+                    text-shadow: 0 0 25px var(--color-soft-glow),
+                        0 0 40px var(--color-mystic-purple),
+                        0 0 50px rgba(138, 43, 226, 0.5);
+                }
+            }
+
+            .dashboard-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-                gap: 25px;
+                gap: 30px;
                 grid-auto-rows: minmax(320px, auto);
             }
 
-            /* 卡片基础样式 */
-            .animal-world-card {
-                background: rgba(255, 255, 255, 0.9);
-                border-radius: 30px;
+            .dashboard-card {
+                background: var(--color-card-bg);
+                border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; /* Organic, stone-like shape */
                 padding: 30px;
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-                backdrop-filter: blur(12px);
-                transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+                box-shadow: 0 0 25px rgba(173, 216, 230, 0.15),
+                    inset 0 0 15px rgba(173, 216, 230, 0.08); /* Soft inner and outer glow */
+                backdrop-filter: blur(15px);
+                transition: all 0.4s ease-in-out;
                 position: relative;
                 overflow: hidden;
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.05); /* Subtle border */
             }
 
-            .animal-world-card:hover {
+            .dashboard-card:hover {
                 transform: translateY(-8px) scale(1.01);
-                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-                border-color: rgba(255, 255, 255, 0.6);
-            }
-
-            .animal-world-card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 6px;
-                background: linear-gradient(
-                    90deg,
-                    #4caf50,
-                    #8bc34a,
-                    #ffc107,
-                    #ff9800
-                ); /* 自然色渐变 */
-                border-radius: 30px 30px 0 0;
-                opacity: 0.8;
+                box-shadow: 0 0 35px var(--color-soft-glow),
+                    inset 0 0 20px rgba(173, 216, 230, 0.15);
+                border-color: rgba(255, 255, 255, 0.15);
             }
 
             .card-header {
                 display: flex;
                 align-items: center;
                 margin-bottom: 25px;
-                border-bottom: 2px solid #e0e0e0;
+                border-bottom: 2px solid var(--color-card-border);
                 padding-bottom: 18px;
             }
 
             .card-icon {
-                font-size: 2.8rem;
+                font-size: 2.2rem;
                 margin-right: 20px;
                 width: 60px;
                 height: 60px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                background: linear-gradient(135deg, #66bb6a, #43a047); /* 绿色系 */
-                border-radius: 15px;
-                color: white;
-                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
-                transition: transform 0.3s ease;
+                background: linear-gradient(
+                    135deg,
+                    var(--color-mystic-purple),
+                    var(--color-enchanted-blue)
+                );
+                border-radius: 50%; /* Orb-like icon */
+                color: var(--color-glowing-light);
+                box-shadow: 0 0 18px rgba(138, 43, 226, 0.6);
+                transition: all 0.3s ease;
             }
 
-            .animal-world-card:hover .card-icon {
-                transform: rotate(5deg) scale(1.05);
+            .dashboard-card:hover .card-icon {
+                transform: rotate(10deg) scale(1.05);
+                box-shadow: 0 0 25px rgba(138, 43, 226, 0.8);
             }
 
             .card-title {
-                font-family: 'Merriweather', serif;
+                font-family: 'Playfair Display', serif;
                 font-size: 1.8rem;
-                font-weight: 600;
-                color: #2e7d32; /* 深绿色 */
+                font-weight: 700;
+                color: var(--color-glowing-light);
                 margin: 0;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
             }
 
             .card-content {
-                min-height: 220px;
+                min-height: 200px;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                background: #f8fff8; /* 浅绿色背景 */
-                border-radius: 18px;
-                border: 2px dashed #a5d6a7; /* 绿色虚线边框 */
-                color: #558b2f; /* 橄榄绿 */
+                background: rgba(0, 0, 0, 0.1); /* Very subtle transparent background */
+                border-radius: 20px; /* Match card organic shape */
+                border: 1px dashed rgba(255, 255, 255, 0.2); /* Shimmering dashed border */
+                color: var(--color-text-muted);
                 font-size: 1.1rem;
                 text-align: center;
                 font-style: italic;
                 padding: 25px;
                 position: relative;
-                overflow: hidden;
             }
 
             /* 输入框样式 */
             .input-container {
                 display: flex;
-                gap: 12px;
+                gap: 15px;
                 margin-bottom: 20px;
             }
 
             .card-input {
                 flex: 1;
                 padding: 12px 18px;
-                border: 2px solid #c8e6c9; /* 浅绿色边框 */
-                border-radius: 10px;
+                background: var(--color-input-bg);
+                border: 1px solid var(--color-input-border);
+                border-radius: 15px; /* Organic input shape */
                 font-size: 1rem;
                 outline: none;
+                color: var(--color-text-light);
                 transition: all 0.3s ease;
-                background-color: #ffffff;
-                color: #388e3c;
+            }
+
+            .card-input::placeholder {
+                color: var(--color-text-muted);
+                opacity: 0.7;
             }
 
             .card-input:focus {
-                border-color: #4caf50; /* 绿色 */
-                box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+                border-color: var(--color-soft-glow);
+                box-shadow: 0 0 0 4px rgba(173, 216, 230, 0.2);
+                background: rgba(0, 0, 0, 0.4);
             }
 
             .submit-btn,
             .auto-request-btn {
                 padding: 12px 25px;
-                background: linear-gradient(135deg, #4caf50, #66bb6a); /* 绿色渐变 */
-                color: white;
+                background: linear-gradient(
+                    135deg,
+                    var(--color-mystic-purple),
+                    var(--color-enchanted-blue)
+                );
+                color: var(--color-glowing-light);
                 border: none;
-                border-radius: 10px;
+                border-radius: 15px; /* Crystal-like button */
                 cursor: pointer;
                 font-size: 1rem;
-                font-weight: 500;
+                font-weight: 600;
                 transition: all 0.3s ease;
-                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+                box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
             }
 
             .submit-btn:hover,
             .auto-request-btn:hover {
                 transform: translateY(-3px);
-                box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+                box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
             }
 
             .submit-btn:disabled,
             .auto-request-btn:disabled {
-                opacity: 0.6;
+                opacity: 0.5;
                 cursor: not-allowed;
                 transform: none;
                 box-shadow: none;
             }
 
             .auto-request-btn {
+                background: linear-gradient(
+                    135deg,
+                    var(--color-deep-moss),
+                    #006400
+                ); /* Mossy stone button */
+                box-shadow: 0 0 15px rgba(34, 139, 34, 0.4);
                 width: 100%;
-                background: linear-gradient(135deg, #8bc34a, #aed581); /* 浅绿色渐变 */
-                box-shadow: 0 4px 15px rgba(139, 195, 74, 0.2);
             }
 
             .auto-request-btn:hover {
-                box-shadow: 0 8px 20px rgba(139, 195, 74, 0.3);
+                box-shadow: 0 0 25px rgba(34, 139, 34, 0.6);
             }
 
             /* 结果显示样式 */
             .result-container {
-                background: #ffffff;
-                border: 1px solid #e8f5e9; /* 极浅绿色边框 */
-                border-radius: 12px;
+                background: var(--color-result-bg);
+                border: 1px solid var(--color-card-border);
+                border-radius: 15px;
                 padding: 20px;
                 margin-top: 15px;
                 max-height: 350px;
                 overflow-y: auto;
                 word-wrap: break-word;
-                box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+                color: var(--color-text-light);
             }
 
             .result-text {
                 white-space: pre-wrap;
-                font-size: 1rem;
+                font-size: 0.95rem;
                 line-height: 1.6;
-                color: #333;
+                color: var(--color-text-light);
                 font-style: normal;
             }
 
@@ -289,7 +300,7 @@
                 align-items: center;
                 justify-content: center;
                 gap: 12px;
-                color: #4caf50; /* 绿色 */
+                color: var(--color-soft-glow);
                 font-style: normal;
                 font-weight: 500;
                 font-size: 1.1rem;
@@ -299,10 +310,10 @@
                 content: '';
                 width: 25px;
                 height: 25px;
-                border: 3px solid #c8e6c9; /* 浅绿色 */
-                border-top: 3px solid #4caf50; /* 绿色 */
+                border: 3px solid rgba(173, 216, 230, 0.2);
+                border-top: 3px solid var(--color-soft-glow);
                 border-radius: 50%;
-                animation: spin 1s linear infinite;
+                animation: spin 1s linear infinite, glow 1.5s ease-in-out infinite alternate;
             }
 
             @keyframes spin {
@@ -314,110 +325,127 @@
                 }
             }
 
+            @keyframes glow {
+                from {
+                    box-shadow: 0 0 5px var(--color-soft-glow);
+                }
+                to {
+                    box-shadow: 0 0 15px var(--color-soft-glow),
+                        0 0 25px rgba(173, 216, 230, 0.5);
+                }
+            }
+
             .default-text {
-                color: #7cb342; /* 浅橄榄绿 */
+                color: var(--color-text-muted);
                 font-style: italic;
             }
 
             /* 特殊卡片主题色 */
             .weather-card .card-icon {
-                background: linear-gradient(135deg, #42a5f5, #2196f3);
-            } /* 蓝色 */
+                background: linear-gradient(135deg, #6a5acd, #483d8b); /* Amethyst */
+                box-shadow: 0 0 18px rgba(106, 90, 205, 0.6);
+            }
             .news-card .card-icon {
-                background: linear-gradient(135deg, #ff7043, #f4511e);
-            } /* 橙色 */
+                background: linear-gradient(135deg, #8b4513, #a0522d); /* Sepia/Parchment */
+                box-shadow: 0 0 18px rgba(139, 69, 19, 0.6);
+            }
             .browser-card .card-icon {
-                background: linear-gradient(135deg, #66bb6a, #43a047);
-            } /* 绿色 */
+                background: linear-gradient(135deg, #8a2be2, #9932cc); /* Deep Violet */
+                box-shadow: 0 0 18px rgba(138, 43, 226, 0.6);
+            }
             .research-card .card-icon {
-                background: linear-gradient(135deg, #ab47bc, #8e24aa);
-            } /* 紫色 */
+                background: linear-gradient(135deg, #228b22, #3cb371); /* Forest Green */
+                box-shadow: 0 0 18px rgba(34, 139, 34, 0.6);
+            }
             .calculator-card .card-icon {
-                background: linear-gradient(135deg, #ffca28, #ffb300);
-            } /* 黄色 */
+                background: linear-gradient(135deg, #ffd700, #daa520); /* Gold Crystal */
+                box-shadow: 0 0 18px rgba(255, 215, 0, 0.6);
+            }
             .time-card .card-icon {
-                background: linear-gradient(135deg, #26c6da, #00bcd4);
-            } /* 青色 */
+                background: linear-gradient(135deg, #a9a9a9, #708090); /* Silver/Moonlight */
+                box-shadow: 0 0 18px rgba(169, 169, 169, 0.6);
+            }
             .file-card .card-icon {
-                background: linear-gradient(135deg, #78909c, #546e7a);
-            } /* 灰色 */
+                background: linear-gradient(135deg, #8b4513, #5a2d0c); /* Ancient Wood */
+                box-shadow: 0 0 18px rgba(139, 69, 19, 0.6);
+            }
 
             /* 响应式设计 */
-            @media (max-width: 1024px) {
-                .animal-world-grid {
-                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-                    gap: 20px;
+            @media (max-width: 1200px) {
+                .dashboard-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                    gap: 25px;
                 }
-                .animal-world-header h1 {
+                .dashboard-header h1 {
                     font-size: 3rem;
                 }
-                .animal-world-header p {
+                .dashboard-header p {
                     font-size: 1.3rem;
-                }
-                .animal-world-card {
-                    padding: 25px;
-                }
-                .card-icon {
-                    font-size: 2.5rem;
-                    width: 55px;
-                    height: 55px;
-                }
-                .card-title {
-                    font-size: 1.6rem;
                 }
             }
 
             @media (max-width: 768px) {
-                .animal-world-grid {
+                .dashboard-grid {
                     grid-template-columns: 1fr;
-                    gap: 18px;
+                    gap: 20px;
                 }
-                .animal-world-header h1 {
+
+                .dashboard-header h1 {
                     font-size: 2.5rem;
                 }
-                .animal-world-header p {
+
+                .dashboard-header p {
                     font-size: 1.1rem;
                 }
-                .animal-world-card {
-                    padding: 20px;
+
+                .dashboard-card {
+                    padding: 25px;
+                    border-radius: 30px; /* Simpler organic shape for mobile */
                 }
+
                 .card-icon {
-                    font-size: 2.2rem;
+                    font-size: 1.8rem;
                     width: 50px;
                     height: 50px;
                 }
+
                 .card-title {
-                    font-size: 1.4rem;
+                    font-size: 1.5rem;
                 }
+
                 body {
-                    padding: 15px;
+                    padding: 20px;
                 }
+
                 .input-container {
                     flex-direction: column;
+                    gap: 10px;
                 }
             }
 
             @media (max-width: 480px) {
-                .animal-world-header h1 {
+                .dashboard-header h1 {
                     font-size: 2rem;
                 }
-                .animal-world-header p {
+
+                .dashboard-header p {
                     font-size: 1rem;
                 }
-                .animal-world-card {
-                    padding: 15px;
+
+                .dashboard-card {
+                    padding: 20px;
                 }
+
                 .card-content {
                     min-height: 180px;
-                    font-size: 0.95rem;
+                    font-size: 1rem;
                 }
-                .card-icon {
-                    font-size: 2rem;
-                    width: 45px;
-                    height: 45px;
-                }
-                .card-title {
-                    font-size: 1.2rem;
+
+                .card-input,
+                .submit-btn,
+                .auto-request-btn {
+                    font-size: 0.9rem;
+                    padding: 10px 15px;
                 }
             }
 
@@ -425,7 +453,7 @@
             @keyframes fadeInScale {
                 from {
                     opacity: 0;
-                    transform: scale(0.95) translateY(20px);
+                    transform: scale(0.9) translateY(20px);
                 }
                 to {
                     opacity: 1;
@@ -433,50 +461,59 @@
                 }
             }
 
-            .animal-world-card {
-                animation: fadeInScale 0.7s ease-out forwards;
+            .dashboard-card {
+                animation: fadeInScale 0.8s ease-out forwards;
                 opacity: 0; /* Start hidden */
             }
 
-            .animal-world-card:nth-child(1) {
+            .dashboard-card:nth-child(1) {
                 animation-delay: 0.1s;
             }
-            .animal-world-card:nth-child(2) {
+            .dashboard-card:nth-child(2) {
                 animation-delay: 0.2s;
             }
-            .animal-world-card:nth-child(3) {
+            .dashboard-card:nth-child(3) {
                 animation-delay: 0.3s;
             }
-            .animal-world-card:nth-child(4) {
+            .dashboard-card:nth-child(4) {
                 animation-delay: 0.4s;
             }
-            .animal-world-card:nth-child(5) {
+            .dashboard-card:nth-child(5) {
                 animation-delay: 0.5s;
             }
-            .animal-world-card:nth-child(6) {
+            .dashboard-card:nth-child(6) {
                 animation-delay: 0.6s;
             }
-            .animal-world-card:nth-child(7) {
+            .dashboard-card:nth-child(7) {
                 animation-delay: 0.7s;
             }
 
-            /* 滚动条样式 */
+            /* 滚动条样式 - 魔法主题 */
             ::-webkit-scrollbar {
                 width: 10px;
             }
 
             ::-webkit-scrollbar-track {
-                background: rgba(100, 170, 100, 0.1);
+                background: rgba(0, 0, 0, 0.3);
                 border-radius: 5px;
             }
 
             ::-webkit-scrollbar-thumb {
-                background: rgba(100, 170, 100, 0.5);
+                background: linear-gradient(
+                    180deg,
+                    var(--color-mystic-purple),
+                    var(--color-enchanted-blue)
+                );
                 border-radius: 5px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
             }
 
             ::-webkit-scrollbar-thumb:hover {
-                background: rgba(100, 170, 100, 0.7);
+                background: linear-gradient(
+                    180deg,
+                    #8a2be2,
+                    #4169e1
+                ); /* Brighter on hover */
             }
 
             /* 结构化数据展示样式 */
@@ -500,7 +537,7 @@
             .file-header {
                 margin-bottom: 18px;
                 padding-bottom: 12px;
-                border-bottom: 2px solid #e8f5e9;
+                border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
             }
 
             .weather-header h3,
@@ -510,41 +547,45 @@
             .calculate-header h3,
             .datetime-header h3,
             .file-header h3 {
-                margin: 0 0 12px 0;
-                color: #2e7d32;
-                font-size: 1.4rem;
-                font-weight: 600;
+                margin: 0 0 10px 0;
+                color: var(--color-glowing-light);
+                font-size: 1.3rem;
+                font-family: 'Playfair Display', serif;
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
             }
 
             .temperature {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
                 font-weight: bold;
-                color: #2196f3; /* 蓝色 */
+                color: #87ceeb; /* Sky blue */
                 margin: 10px 0;
+                text-shadow: 0 0 10px rgba(135, 206, 235, 0.5);
             }
 
             .current-time {
                 font-size: 1.8rem;
                 font-weight: bold;
-                color: #00bcd4; /* 青色 */
+                color: #b0c4de; /* Light steel blue */
                 margin: 10px 0;
+                text-shadow: 0 0 8px rgba(176, 196, 222, 0.5);
             }
 
             .expression {
-                background: #e8f5e9;
+                background: rgba(255, 255, 255, 0.05);
                 padding: 10px 15px;
                 border-radius: 8px;
                 font-family: 'Courier New', monospace;
                 margin: 8px 0;
-                font-size: 1rem;
-                color: #388e3c;
+                color: #98fb98; /* Pale green */
+                border: 1px solid rgba(255, 255, 255, 0.1);
             }
 
             .result-value {
-                font-size: 1.8rem;
+                font-size: 2rem;
                 font-weight: bold;
-                color: #4caf50; /* 绿色 */
+                color: #ffd700; /* Gold */
                 margin: 10px 0;
+                text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
             }
 
             .info-row {
@@ -552,7 +593,7 @@
                 justify-content: space-between;
                 margin: 10px 0;
                 padding: 8px 0;
-                border-bottom: 1px dashed #c8e6c9;
+                border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
             }
 
             .info-row:last-child {
@@ -561,13 +602,13 @@
 
             .label {
                 font-weight: 600;
-                color: #558b2f;
+                color: var(--color-text-muted);
                 flex: 0 0 auto;
                 margin-right: 15px;
             }
 
             .value {
-                color: #1b5e20;
+                color: var(--color-text-light);
                 text-align: right;
                 flex: 1;
             }
@@ -591,9 +632,9 @@
             .datetime-formats h4,
             .file-content h4 {
                 margin: 0 0 10px 0;
-                color: #388e3c;
-                font-size: 1.2rem;
-                font-weight: 600;
+                color: var(--color-glowing-light);
+                font-size: 1.1rem;
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
             }
 
             .suggestions ul,
@@ -605,7 +646,7 @@
             .calculate-steps ol {
                 margin: 0;
                 padding-left: 25px;
-                list-style-type: '🌿 '; /* 自定义列表符号 */
+                list-style-type: '✨ '; /* Magical bullet points */
             }
 
             .suggestions li,
@@ -617,7 +658,7 @@
             .calculate-steps li {
                 margin: 8px 0;
                 line-height: 1.5;
-                color: #424242;
+                color: var(--color-text-light);
             }
 
             .articles {
@@ -625,30 +666,30 @@
             }
 
             .article {
-                background: #f0f8f0;
+                background: rgba(255, 255, 255, 0.05);
                 padding: 15px;
                 border-radius: 10px;
-                margin: 12px 0;
-                border-left: 5px solid #ff9800; /* 橙色边条 */
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                margin: 15px 0;
+                border-left: 3px solid #8b4513; /* Sepia tone for news */
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             }
 
             .article h4 {
                 margin: 0 0 10px 0;
-                color: #e65100; /* 深橙色 */
+                color: var(--color-glowing-light);
                 font-size: 1.1rem;
             }
 
             .article-meta {
                 font-size: 0.9rem;
-                color: #757575;
+                color: var(--color-text-muted);
                 margin: 0 0 10px 0;
             }
 
             .article-summary {
                 margin: 0;
                 line-height: 1.5;
-                color: #424242;
+                color: var(--color-text-light);
             }
 
             .tech-tags {
@@ -659,35 +700,35 @@
             }
 
             .tech-tag {
-                background: #e0f7fa;
-                color: #00838f;
+                background: rgba(138, 43, 226, 0.2);
+                color: #8a2be2;
                 padding: 6px 12px;
                 border-radius: 15px;
-                font-size: 0.9rem;
+                font-size: 0.85rem;
                 font-weight: 500;
-                border: 1px solid #b2ebf2;
+                border: 1px solid rgba(138, 43, 226, 0.4);
             }
 
             .extract-url,
             .file-path {
                 font-size: 0.95rem;
-                color: #616161;
+                color: var(--color-text-muted);
+                font-family: 'Courier New', monospace;
                 word-break: break-all;
                 margin: 8px 0;
-                font-family: 'Courier New', monospace;
             }
 
             .content-text {
-                background: #e8f5e9;
-                border: 1px solid #c8e6c9;
-                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
                 padding: 15px;
                 margin: 10px 0;
                 font-size: 0.9rem;
-                line-height: 1.5;
+                line-height: 1.6;
                 overflow-x: auto;
                 white-space: pre-wrap;
-                color: #388e3c;
+                color: var(--color-text-light);
             }
 
             .format-item {
@@ -695,7 +736,7 @@
                 justify-content: space-between;
                 margin: 10px 0;
                 padding: 8px 0;
-                border-bottom: 1px dashed #c8e6c9;
+                border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
             }
 
             .format-item:last-child {
@@ -704,81 +745,135 @@
 
             .format-label {
                 font-weight: 600;
-                color: #558b2f;
+                color: var(--color-text-muted);
                 flex: 0 0 auto;
                 margin-right: 15px;
             }
 
             .format-value {
-                color: #1b5e20;
+                color: var(--color-text-light);
                 font-family: 'Courier New', monospace;
                 font-size: 0.95rem;
                 text-align: right;
                 flex: 1;
             }
+
+            /* Firefly effect */
+            .firefly {
+                position: absolute;
+                width: 5px;
+                height: 5px;
+                background: #fff;
+                border-radius: 50%;
+                opacity: 0;
+                box-shadow: 0 0 10px 5px #fff, 0 0 20px 10px #fff,
+                    0 0 30px 15px #fff;
+                animation: animateFirefly 10s linear infinite;
+                z-index: 0;
+            }
+
+            @keyframes animateFirefly {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 0;
+                }
+                20% {
+                    opacity: 1;
+                }
+                40% {
+                    transform: translate(
+                            calc(var(--x) * 1px),
+                            calc(var(--y) * 1px)
+                        )
+                        scale(1.2);
+                    opacity: 0.8;
+                }
+                60% {
+                    opacity: 0.5;
+                }
+                80% {
+                    transform: translate(
+                            calc(var(--x) * 2px),
+                            calc(var(--y) * 2px)
+                        )
+                        scale(0.8);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: translate(
+                            calc(var(--x) * 3px),
+                            calc(var(--y) * 3px)
+                        )
+                        scale(1);
+                    opacity: 0;
+                }
+            }
         </style>
     </head>
     <body>
-        <div class="animal-world-container">
-            <!-- 动物世界头部 -->
-            <div class="animal-world-header">
-                <h1>🌍 动物世界探索中心</h1>
-                <p>发现地球上最奇妙的生物与它们的家园</p>
-            </div>
+        <!-- Firefly background effect -->
+        <div class="firefly-container"></div>
 
-            <!-- 动物世界功能网格布局 -->
-            <div class="animal-world-grid">
-                <!-- 丛林天气预报区域 -->
-                <div class="animal-world-card weather-card">
+        <div class="dashboard-container">
+            <!-- Dashboard 头部 -->
+            <header class="dashboard-header">
+                <h1>秘境之森：智慧之光</h1>
+                <p>探索魔法密林的奥秘，驾驭智能的能量</p>
+            </header>
+
+            <!-- Dashboard 网格布局 -->
+            <main class="dashboard-grid">
+                <!-- 天气区域 -->
+                <section class="dashboard-card weather-card">
                     <div class="card-header">
-                        <div class="card-icon">🌳</div>
-                        <h3 class="card-title">丛林天气预报</h3>
+                        <div class="card-icon">✨</div>
+                        <h3 class="card-title">天气预言</h3>
                     </div>
                     <div class="card-content">
                         <button
                             class="auto-request-btn"
                             onclick="getWeatherInfo()"
                         >
-                            获取栖息地天气
+                            召唤天气精灵
                         </button>
                         <div
                             id="weather-result"
                             class="default-text"
                             style="margin-top: 15px"
                         >
-                            点击按钮获取动物栖息地天气信息
+                            点击按钮获取天气预言
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- 动物世界快讯区域 -->
-                <div class="animal-world-card news-card">
+                <!-- 今日新闻区域 -->
+                <section class="dashboard-card news-card">
                     <div class="card-header">
-                        <div class="card-icon">🐾</div>
-                        <h3 class="card-title">动物世界快讯</h3>
+                        <div class="card-icon">📜</div>
+                        <h3 class="card-title">古老卷轴</h3>
                     </div>
                     <div class="card-content">
                         <button
                             class="auto-request-btn"
                             onclick="getNewsInfo()"
                         >
-                            获取最新动物新闻
+                            展开今日卷轴
                         </button>
                         <div
                             id="news-result"
                             class="default-text"
                             style="margin-top: 15px"
                         >
-                            点击按钮获取最新动物新闻
+                            点击按钮获取最新密林传闻
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- 生态圈探索区域 -->
-                <div class="animal-world-card browser-card">
+                <!-- 网页浏览区域 -->
+                <section class="dashboard-card browser-card">
                     <div class="card-header">
-                        <div class="card-icon">🌐</div>
-                        <h3 class="card-title">生态圈探索</h3>
+                        <div class="card-icon">🔮</div>
+                        <h3 class="card-title">奥秘之窗</h3>
                     </div>
                     <div class="card-content">
                         <div class="input-container">
@@ -786,24 +881,24 @@
                                 type="url"
                                 id="url-input"
                                 class="card-input"
-                                placeholder="请输入生态网站网址，如：https://www.natgeo.com/animals"
+                                placeholder="请输入魔法符文（网址），如：https://www.example.com"
                                 onkeypress="handleUrlKeyPress(event)"
                             />
                             <button class="submit-btn" onclick="extractContent()">
-                                探索
+                                窥探
                             </button>
                         </div>
                         <div id="browser-result" class="default-text">
-                            输入网址并点击探索按钮，或按回车键
+                            输入魔法符文并点击窥探，或按回车键
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- 生物奥秘研究区域 -->
-                <div class="animal-world-card research-card">
+                <!-- 问题研究区域 -->
+                <section class="dashboard-card research-card">
                     <div class="card-header">
-                        <div class="card-icon">🔬</div>
-                        <h3 class="card-title">生物奥秘研究</h3>
+                        <div class="card-icon">🌿</div>
+                        <h3 class="card-title">智慧之树</h3>
                     </div>
                     <div class="card-content">
                         <div class="input-container">
@@ -811,24 +906,24 @@
                                 type="text"
                                 id="research-input"
                                 class="card-input"
-                                placeholder="请输入研究主题，如：鲸鱼的迁徙模式"
+                                placeholder="请输入研究主题，如：魔法药剂配方"
                                 onkeypress="handleResearchKeyPress(event)"
                             />
                             <button class="submit-btn" onclick="doResearch()">
-                                研究
+                                研习
                             </button>
                         </div>
                         <div id="research-result" class="default-text">
-                            输入研究主题并点击研究按钮，或按回车键
+                            输入研究主题并点击研习，或按回车键
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- 自然法则计算区域 -->
-                <div class="animal-world-card calculator-card">
+                <!-- 计算器区域 -->
+                <section class="dashboard-card calculator-card">
                     <div class="card-header">
-                        <div class="card-icon">🧮</div>
-                        <h3 class="card-title">自然法则计算</h3>
+                        <div class="card-icon">💎</div>
+                        <h3 class="card-title">符文计算</h3>
                     </div>
                     <div class="card-content">
                         <div class="input-container">
@@ -836,65 +931,65 @@
                                 type="text"
                                 id="calc-input"
                                 class="card-input"
-                                placeholder="请输入数学表达式，如：100 / 4 + 5 * 2"
+                                placeholder="请输入符文表达式，如：sqrt(16) + 2*3"
                                 onkeypress="handleCalcKeyPress(event)"
                             />
                             <button class="submit-btn" onclick="doCalculate()">
-                                计算
+                                演算
                             </button>
                         </div>
                         <div id="calc-result" class="default-text">
-                            输入数学表达式并点击计算按钮，或按回车键
+                            输入符文表达式并点击演算，或按回车键
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- 自然时钟区域 -->
-                <div class="animal-world-card time-card">
+                <!-- 当前时间区域 -->
+                <section class="dashboard-card time-card">
                     <div class="card-header">
-                        <div class="card-icon">⏰</div>
-                        <h3 class="card-title">自然时钟</h3>
+                        <div class="card-icon">⏳</div>
+                        <h3 class="card-title">时光沙漏</h3>
                     </div>
                     <div class="card-content">
                         <button
                             class="auto-request-btn"
                             onclick="getCurrentTime()"
                         >
-                            获取当前自然时间
+                            翻转沙漏
                         </button>
                         <div
                             id="time-result"
                             class="default-text"
                             style="margin-top: 15px"
                         >
-                            点击按钮获取当前时间信息
+                            点击按钮获取当前时间流逝
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- 物种档案查阅区域 -->
-                <div class="animal-world-card file-card">
+                <!-- 文件内容展示区域 -->
+                <section class="dashboard-card file-card">
                     <div class="card-header">
-                        <div class="card-icon">📁</div>
-                        <h3 class="card-title">物种档案查阅</h3>
+                        <div class="card-icon">🌳</div>
+                        <h3 class="card-title">密林档案</h3>
                     </div>
                     <div class="card-content">
                         <button
                             class="auto-request-btn"
                             onclick="showFileContent()"
                         >
-                            查看动物档案
+                            翻阅古籍
                         </button>
                         <div
                             id="file-result"
                             class="default-text"
                             style="margin-top: 15px"
                         >
-                            点击按钮查看指定动物档案内容
+                            点击按钮查看密林古籍内容
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
+            </main>
         </div>
 
         <script>
@@ -1033,7 +1128,7 @@
                                 实际类型: ${data.type}<br/>
                                 <details style="margin-top: 10px;">
                                     <summary>查看原始数据</summary>
-                                    <pre style="background: #f8f9fa; padding: 10px; margin-top: 5px; font-size: 0.8rem;">${JSON.stringify(
+                                    <pre style="background: #f8f9fa; padding: 10px; margin-top: 5px; font-size: 0.8rem; color: #333;">${JSON.stringify(
                                         data,
                                         null,
                                         2
@@ -1089,7 +1184,7 @@
 
             // 天气数据格式化
             function formatWeatherData(data) {
-                const city = data.city || '未知栖息地';
+                const city = data.city || '未知城市';
                 const temp = data.temperature || {};
                 const current = temp.current || 'N/A';
                 const low = temp.low || 'N/A';
@@ -1103,7 +1198,7 @@
                 return `
                     <div class="weather-display">
                         <div class="weather-header">
-                            <h3>🌳 ${city} 天气</h3>
+                            <h3>✨ ${city} 天气预言</h3>
                             <div class="temperature">${current}</div>
                         </div>
                         <div class="weather-info">
@@ -1132,7 +1227,7 @@
                             suggestions.length > 0
                                 ? `
                         <div class="suggestions">
-                            <h4>生态建议:</h4>
+                            <h4>精灵的忠告:</h4>
                             <ul>
                                 ${suggestions.map((s) => `<li>${s}</li>`).join('')}
                             </ul>
@@ -1148,7 +1243,7 @@
                 return `
                     <div class="news-display">
                         <div class="news-header">
-                            <h3>🐾 ${data.topic} 相关快讯</h3>
+                            <h3>📜 ${data.topic} 密林传闻</h3>
                             <p class="news-summary">${data.summary}</p>
                         </div>
                         <div class="articles">
@@ -1165,7 +1260,7 @@
                                 .join('')}
                         </div>
                         <div class="key-points">
-                            <h4>关键发现:</h4>
+                            <h4>卷轴要点:</h4>
                             <ul>
                                 ${data.keyPoints.map((point) => `<li>${point}</li>`).join('')}
                             </ul>
@@ -1179,7 +1274,7 @@
                 return `
                     <div class="extract-display">
                         <div class="extract-header">
-                            <h3>🌐 ${data.title}</h3>
+                            <h3>🔮 ${data.title}</h3>
                             <p class="extract-url">${data.url}</p>
                             <p class="extract-description">${data.description}</p>
                         </div>
@@ -1188,7 +1283,7 @@
                             <p>${data.mainContent}</p>
                         </div>
                         <div class="extract-features">
-                            <h4>生态特色:</h4>
+                            <h4>奥秘特色:</h4>
                             <ul>
                                 ${data.keyFeatures
                                     .map((feature) => `<li>${feature}</li>`)
@@ -1196,7 +1291,7 @@
                             </ul>
                         </div>
                         <div class="extract-tech">
-                            <h4>相关技术:</h4>
+                            <h4>符文构成:</h4>
                             <div class="tech-tags">
                                 ${data.technologies
                                     .map((tech) => `<span class="tech-tag">${tech}</span>`)
@@ -1216,7 +1311,7 @@
                 return `
                     <div class="research-display">
                         <div class="research-header">
-                            <h3>🔬 ${data.topic} 研究报告</h3>
+                            <h3>🌿 ${data.topic} 研习报告</h3>
                             <p class="research-intro">${data.introduction}</p>
                         </div>
                         <div class="research-findings">
@@ -1254,7 +1349,7 @@
                             </ul>
                         </div>
                         <div class="research-conclusion">
-                            <h4>研究结论:</h4>
+                            <h4>研习结论:</h4>
                             <p>${data.conclusion}</p>
                         </div>
                     </div>
@@ -1266,12 +1361,12 @@
                 return `
                     <div class="calculate-display">
                         <div class="calculate-header">
-                            <h3>🧮 自然法则计算结果</h3>
+                            <h3>💎 符文演算结果</h3>
                             <div class="expression">${data.expression}</div>
                             <div class="result-value">${data.result}</div>
                         </div>
                         <div class="calculate-steps">
-                            <h4>计算步骤:</h4>
+                            <h4>演算步骤:</h4>
                             <ol>
                                 ${data.steps.map((step) => `<li>${step}</li>`).join('')}
                             </ol>
@@ -1289,7 +1384,7 @@
                 return `
                     <div class="datetime-display">
                         <div class="datetime-header">
-                            <h3>⏰ 自然时钟信息</h3>
+                            <h3>⏳ 时光沙漏</h3>
                             <div class="current-time">${data.currentTime}</div>
                         </div>
                         <div class="datetime-info">
@@ -1307,7 +1402,7 @@
                             </div>
                         </div>
                         <div class="datetime-formats">
-                            <h4>不同格式:</h4>
+                            <h4>不同流逝形式:</h4>
                             <div class="format-item">
                                 <span class="format-label">ISO格式:</span>
                                 <span class="format-value">${data.formats.iso}</span>
@@ -1330,7 +1425,7 @@
                 return `
                     <div class="file-display">
                         <div class="file-header">
-                            <h3>📁 物种档案操作结果</h3>
+                            <h3>🌳 密林档案操作结果</h3>
                             <div class="file-path">${data.path}</div>
                         </div>
                         <div class="file-info">
@@ -1373,38 +1468,38 @@
             async function getWeatherInfo() {
                 const btn = event.target;
                 btn.disabled = true;
-                btn.textContent = '获取中...';
+                btn.textContent = '召唤中...';
 
                 showLoading('weather-result');
 
                 try {
-                    const result = await window.aiAgentAPI.weather('亚马逊雨林'); // 默认查询亚马逊雨林
+                    const result = await window.aiAgentAPI.weather('北京');
                     showResult('weather-result', result);
                 } catch (error) {
-                    showResult('weather-result', '获取天气信息失败: ' + error.message);
+                    showResult('weather-result', '召唤天气精灵失败: ' + error.message);
                 }
 
                 btn.disabled = false;
-                btn.textContent = '获取栖息地天气';
+                btn.textContent = '召唤天气精灵';
             }
 
             // 新闻查询功能
             async function getNewsInfo() {
                 const btn = event.target;
                 btn.disabled = true;
-                btn.textContent = '获取中...';
+                btn.textContent = '展开中...';
 
                 showLoading('news-result');
 
                 try {
-                    const result = await window.aiAgentAPI.news('动物保护'); // 默认查询动物保护新闻
+                    const result = await window.aiAgentAPI.news('本日新闻');
                     showResult('news-result', result);
                 } catch (error) {
-                    showResult('news-result', '获取新闻信息失败: ' + error.message);
+                    showResult('news-result', '展开密林传闻失败: ' + error.message);
                 }
 
                 btn.disabled = false;
-                btn.textContent = '获取最新动物新闻';
+                btn.textContent = '展开今日卷轴';
             }
 
             // 网页内容提取功能
@@ -1413,13 +1508,13 @@
                 const url = urlInput.value.trim();
 
                 if (!url) {
-                    showResult('browser-result', '请输入有效的网址');
+                    showResult('browser-result', '请输入有效的魔法符文');
                     return;
                 }
 
                 const btn = event.target;
                 btn.disabled = true;
-                btn.textContent = '探索中...';
+                btn.textContent = '窥探中...';
 
                 showLoading('browser-result');
 
@@ -1427,11 +1522,11 @@
                     const result = await window.aiAgentAPI.extract(url);
                     showResult('browser-result', result);
                 } catch (error) {
-                    showResult('browser-result', '内容提取失败: ' + error.message);
+                    showResult('browser-result', '奥秘窥探失败: ' + error.message);
                 }
 
                 btn.disabled = false;
-                btn.textContent = '探索';
+                btn.textContent = '窥探';
             }
 
             // 研究分析功能
@@ -1446,7 +1541,7 @@
 
                 const btn = event.target;
                 btn.disabled = true;
-                btn.textContent = '研究中...';
+                btn.textContent = '研习中...';
 
                 showLoading('research-result');
 
@@ -1454,11 +1549,11 @@
                     const result = await window.aiAgentAPI.research(topic);
                     showResult('research-result', result);
                 } catch (error) {
-                    showResult('research-result', '研究分析失败: ' + error.message);
+                    showResult('research-result', '智慧研习失败: ' + error.message);
                 }
 
                 btn.disabled = false;
-                btn.textContent = '研究';
+                btn.textContent = '研习';
             }
 
             // 处理URL输入框回车键
@@ -1487,7 +1582,7 @@
 
                 const btn = event.target;
                 btn.disabled = true;
-                btn.textContent = '计算中...';
+                btn.textContent = '演算中...';
 
                 showLoading('calc-result');
 
@@ -1495,11 +1590,11 @@
                     const result = await window.aiAgentAPI.calculate(expression);
                     showResult('calc-result', result);
                 } catch (error) {
-                    showResult('calc-result', '计算失败: ' + error.message);
+                    showResult('calc-result', '符文演算失败: ' + error.message);
                 }
 
                 btn.disabled = false;
-                btn.textContent = '计算';
+                btn.textContent = '演算';
             }
 
             // 处理计算输入框回车键
@@ -1513,7 +1608,7 @@
             async function getCurrentTime() {
                 const btn = event.target;
                 btn.disabled = true;
-                btn.textContent = '获取中...';
+                btn.textContent = '翻转中...';
 
                 showLoading('time-result');
 
@@ -1521,57 +1616,80 @@
                     const result = await window.aiAgentAPI.datetime('current');
                     showResult('time-result', result);
                 } catch (error) {
-                    showResult('time-result', '获取时间信息失败: ' + error.message);
+                    showResult('time-result', '获取时间流逝失败: ' + error.message);
                 }
 
                 btn.disabled = false;
-                btn.textContent = '获取当前自然时间';
+                btn.textContent = '翻转沙漏';
             }
 
             // 显示文件内容功能
             async function showFileContent() {
                 const btn = event.target;
                 btn.disabled = true;
-                btn.textContent = '读取中...';
+                btn.textContent = '翻阅中...';
 
                 showLoading('file-result');
 
                 try {
-                    // 假设这里有一个关于动物的Markdown文件
                     const targetPath =
-                        '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/动物档案.md'; // 请替换为实际的文件路径
+                        '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
                     const result = await window.aiAgentAPI.file(`read:${targetPath}`);
                     showResult('file-result', result);
                 } catch (error) {
-                    showResult('file-result', '读取文件信息失败: ' + error.message);
+                    showResult('file-result', '翻阅古籍失败: ' + error.message);
                 }
 
                 btn.disabled = false;
-                btn.textContent = '查看动物档案';
+                btn.textContent = '翻阅古籍';
             }
 
             // 页面加载完成后的初始化
             document.addEventListener('DOMContentLoaded', function () {
-                console.log('🌍 动物世界探索中心 初始化完成');
+                console.log('🌲 秘境之森：智慧之光 初始化完成');
+
+                // 添加卡片点击效果（保留原有功能）
+                const cards = document.querySelectorAll('.dashboard-card');
+                cards.forEach((card) => {
+                    // 跳过已经有特殊功能的卡片
+                    if (
+                        card.classList.contains('weather-card') ||
+                        card.classList.contains('news-card') ||
+                        card.classList.contains('browser-card') ||
+                        card.classList.contains('research-card') ||
+                        card.classList.contains('calculator-card') ||
+                        card.classList.contains('time-card') ||
+                        card.classList.contains('file-card')
+                    ) {
+                        return;
+                    }
+
+                    card.addEventListener('click', function () {
+                        const title = this.querySelector('.card-title').textContent;
+                        console.log(`点击了 ${title} 卡片`);
+                    });
+                });
 
                 // 页面加载后自动请求所有功能
-                console.log('🚀 开始自动加载所有功能...');
+                console.log('🚀 开始自动加载所有密林功能...');
 
                 // 延迟一秒后开始加载，让页面完全渲染
                 setTimeout(() => {
                     autoLoadAllFunctions();
                 }, 1000);
+
+                // Initialize fireflies
+                createFireflies(50); // Create 50 fireflies
             });
 
             // 自动加载所有功能（并行请求）
             async function autoLoadAllFunctions() {
-                console.log('📋 正在并行加载所有功能...');
+                console.log('📋 正在并行加载所有密林功能...');
 
                 // 预先设置输入框的默认值
-                document.getElementById('url-input').value =
-                    'https://www.nationalgeographic.com/animals';
-                document.getElementById('research-input').value = '濒危物种保护';
-                document.getElementById('calc-input').value = '100 / 4 + 5 * 2';
+                document.getElementById('url-input').value = 'https://news.cctv.com/';
+                document.getElementById('research-input').value = 'agent前沿';
+                document.getElementById('calc-input').value = '1+9*20-2';
 
                 // 显示所有加载状态
                 showLoading('weather-result');
@@ -1588,50 +1706,47 @@
                 const tasks = [
                     // 1. 天气查询
                     {
-                        name: '🌳 栖息地天气',
+                        name: '✨ 天气预言',
                         resultId: 'weather-result',
-                        task: () => window.aiAgentAPI.weather('亚马逊雨林'),
+                        task: () => window.aiAgentAPI.weather('北京'),
                     },
                     // 2. 今日新闻
                     {
-                        name: '🐾 动物世界快讯',
+                        name: '📜 今日新闻',
                         resultId: 'news-result',
-                        task: () => window.aiAgentAPI.news('动物保护'),
+                        task: () => window.aiAgentAPI.news('今日头条'),
                     },
                     // 3. 网页内容
                     {
-                        name: '🌐 生态圈探索',
+                        name: '🔮 网页内容',
                         resultId: 'browser-result',
-                        task: () =>
-                            window.aiAgentAPI.extract(
-                                'https://www.nationalgeographic.com/animals'
-                            ),
+                        task: () => window.aiAgentAPI.extract('https://news.cctv.com/'),
                     },
                     // 4. 研究分析
                     {
-                        name: '🔬 生物奥秘研究',
+                        name: '🌿 研究分析',
                         resultId: 'research-result',
-                        task: () => window.aiAgentAPI.research('濒危物种保护'),
+                        task: () => window.aiAgentAPI.research('agent前沿'),
                     },
                     // 5. 智能计算
                     {
-                        name: '🧮 自然法则计算',
+                        name: '💎 智能计算',
                         resultId: 'calc-result',
-                        task: () => window.aiAgentAPI.calculate('100 / 4 + 5 * 2'),
+                        task: () => window.aiAgentAPI.calculate('1+9*20-2'),
                     },
                     // 6. 时间信息
                     {
-                        name: '⏰ 自然时钟',
+                        name: '⏳ 时间信息',
                         resultId: 'time-result',
                         task: () => window.aiAgentAPI.datetime('current'),
                     },
                     // 7. 文件管理
                     {
-                        name: '📁 物种档案查阅',
+                        name: '🌳 文件管理',
                         resultId: 'file-result',
                         task: () => {
                             const targetPath =
-                                '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/动物档案.md'; // 请替换为实际的文件路径
+                                '/Users/yaoerzhuang/dev/work/agent/langGrap-info-create/展示的文件内容.md';
                             return window.aiAgentAPI.file(`read:${targetPath}`);
                         },
                     },
@@ -1704,7 +1819,7 @@
                     const failCount = results.filter((r) => !r.success).length;
 
                     console.log(
-                        `🎉 所有功能并行加载完成！成功: ${successCount}个, 失败: ${failCount}个`
+                        `🎉 所有密林功能并行加载完成！成功: ${successCount}个, 失败: ${failCount}个`
                     );
 
                     if (failCount > 0) {
@@ -1715,6 +1830,21 @@
                     }
                 } catch (error) {
                     console.log('❌ 并行加载过程中出现异常:', error.message);
+                }
+            }
+
+            // Firefly generation
+            function createFireflies(count) {
+                const container = document.querySelector('.firefly-container');
+                for (let i = 0; i < count; i++) {
+                    const firefly = document.createElement('div');
+                    firefly.classList.add('firefly');
+                    firefly.style.left = `${Math.random() * 100}vw`;
+                    firefly.style.top = `${Math.random() * 100}vh`;
+                    firefly.style.animationDelay = `${Math.random() * 10}s`;
+                    firefly.style.setProperty('--x', `${Math.random() * 200 - 100}`); // -100 to 100
+                    firefly.style.setProperty('--y', `${Math.random() * 200 - 100}`); // -100 to 100
+                    container.appendChild(firefly);
                 }
             }
         </script>
