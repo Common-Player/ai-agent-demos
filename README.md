@@ -1,56 +1,32 @@
-# LangGraph Agent 示例项目
+# LangGraph 多功能 AI Agent 项目集合
 
-这个项目包含了使用 LangGraph 框架构建智能代理的示例，提供了 JavaScript 和 Python 两个版本的实现。
+集合包含了使用 LangGraph 框架构建的多个智能代理示例，其中 **langGrap-info-create** 是主要项目。
 
-## 项目结构
+## 🌟 核心项目：langGrap-info-create
 
-```
-├── langGraph-base/          # Node.js/JavaScript 版本
-│   ├── agent.js            # 主要代理逻辑
-│   ├── package.json        # Node.js 依赖配置
-│   └── README.md           # JavaScript 版本说明
-│
-├── langGraph-base-py/       # Python 版本  
-│   ├── agent.py            # Python 代理实现
-│   ├── requirements.txt    # Python 依赖配置
-│   ├── 安装指南.md         # 安装指导
-│   └── README.md           # Python 版本说明
-│
-└── demo-*/                  # 其他演示项目
-```
 
-## 快速开始
+### 🛠️ 技术架构
+- **前端**: 纯 HTML + CSS + JavaScript
+- **后端**: Flask + LangGraph + LangChain 
+- **AI 模型**: Google Gemini 2.5 Pro
+- **工具集成**: Tavily Search + Tavily Extract
+- **会话管理**: 基于 LangGraph 的内存管理
 
-### JavaScript 版本
+### 🚀 快速开始
+
 ```bash
-cd langGraph-base
-npm install
-node agent.js
-```
-
-### Python 版本
-```bash
-cd langGraph-base-py
+cd langGrap-info-create
 pip install -r requirements.txt
-python agent.py
+
+# 配置环境变量（创建.env文件）
+# GOOGLE_API_KEY=your_google_api_key_here
+# TAVILY_API_KEY=your_tavily_api_key_here
+
+# 启动Web界面
+python run_web.py
 ```
 
-## 环境配置
+然后在浏览器中访问：http://localhost:8080
 
-两个版本都需要配置相应的 API 密钥，请参考各目录下的 README.md 文件了解详细配置方法。
-
-## 功能特性
-
-- 🤖 智能对话代理
-- 🔍 网络搜索集成（Tavily Search）
-- 💬 流式和非流式输出支持
-- 🧠 对话记忆管理
-- 🌐 多语言支持
-
-## 许可证
-
-MIT License
-
-## 贡献
-
-欢迎提交 Pull Request 和 Issue！ 
+### 📖 详细文档
+查看 `langGrap-info-create/README.md` 获取完整的使用指南和功能介绍。
